@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 
-import { uploadBufferToCloudinary } from "../config/cloudinary.js";
 import { User } from "../models/user.model.js";
 import { Folder } from "../models/folder.model.js";
 import { File } from "../models/file.model.js";
@@ -8,12 +7,18 @@ import { Subscription } from "../models/subscription.model.js";
 
 import { PLAN_LIMITS } from "../utils/planLimits.js";
 
+
+import { supabase } from "../config/supabase.js"
+
 export const uploadCustomerFile = async (
   req: Request,
   res: Response
 ) => {
   let reservedSubscription: any = null;
+
   let totalFileSize = 0;
+
+  const uploadedPaths: string[] = [];
 
   try {
     const { slug } = req.params;
@@ -39,21 +44,18 @@ export const uploadCustomerFile = async (
     }
 
     totalFileSize = files.reduce(
-      (total, file) =>
-        total + file.size,
+      (sum, file) => sum + file.size,
       0
     );
 
-    const user =
-      await User.findOne({
-        slug,
-      });
+    const user = await User.findOne({
+      slug,
+    });
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message:
-          "User not found",
+        message: "User not found",
       });
     }
 
@@ -67,7 +69,7 @@ export const uploadCustomerFile = async (
 
     const subscription =
       await Subscription.findOne({
-        user: user._id, 
+        user: user._id,
       });
 
     if (!subscription) {
@@ -77,14 +79,12 @@ export const uploadCustomerFile = async (
           "Subscription not found",
       });
     }
-    console.log("PLAN:", subscription.plan);
-    console.log("FILES SIZE:", totalFileSize);
+
     const limits =
-    PLAN_LIMITS[
+      PLAN_LIMITS[
       subscription.plan.toLowerCase() as keyof typeof PLAN_LIMITS
-    ];
-    
-    console.log("LIMITS:", limits);
+      ];
+
     if (!limits) {
       return res.status(500).json({
         success: false,
@@ -94,14 +94,8 @@ export const uploadCustomerFile = async (
     }
 
     const storageLimitBytes =
-      limits.storage *
-      1024 *
-      1024;
+      limits.storage * 1024 * 1024;
 
-    /**
-     * Reserve quota FIRST
-     * Prevents race conditions
-     */
     reservedSubscription =
       await Subscription.findOneAndUpdate(
         {
@@ -119,8 +113,7 @@ export const uploadCustomerFile = async (
         },
         {
           $inc: {
-            uploadCount:
-              files.length,
+            uploadCount: files.length,
             storageUsed:
               totalFileSize,
           },
@@ -138,87 +131,139 @@ export const uploadCustomerFile = async (
       });
     }
 
-    const timestamp =
-      Date.now();
+    const timestamp = Date.now();
 
     const folderName =
       `${customerName}_${timestamp}`;
 
-    const folder =
-      await Folder.create({
-        owner: user._id,
-        customerName,
-        folderName,
-        totalFiles:
-          files.length,
-        status: "pending",
-      });
+    const folder = await Folder.create({
+      owner: user._id,
+      customerName,
+      folderName,
+      totalFiles: files.length,
+      status: "pending",
+    });
 
+    const getThumbnailUrl = (
+      mimetype: string,
+      fileUrl: string
+    ) => {
+      if (
+        mimetype.startsWith(
+          "image/"
+        )
+      ) {
+        return fileUrl;
+      }
+
+      if (
+        mimetype ===
+        "application/pdf"
+      ) {
+        return "https://cdn-icons-png.flaticon.com/512/337/337946.png";
+      }
+
+      if (
+        mimetype.includes("word")
+      ) {
+        return "https://cdn-icons-png.flaticon.com/512/281/281760.png";
+      }
+
+      if (
+        mimetype.includes(
+          "spreadsheet"
+        ) ||
+        mimetype.includes("excel")
+      ) {
+        return "https://cdn-icons-png.flaticon.com/512/732/732220.png";
+      }
+
+      return "https://cdn-icons-png.flaticon.com/512/833/833524.png";
+    };
 
     const uploadedFiles =
       await Promise.all(
-        files.map((file) =>
-          uploadBufferToCloudinary(
-            file.buffer,
-            `users/${user._id}/${folderName}`
-          ).then((cloudinaryFile) => {
+        files.map(async (file) => {
+          const storagePath =
+            `${user._id}/${folderName}/${timestamp}-${file.originalname}`;
 
-            return File.create({
-              owner:
-                user._id,
+          const { error } =
+            await supabase.storage
+              .from("documents")
+              .upload(
+                storagePath,
+                file.buffer,
+                {
+                  contentType:
+                    file.mimetype,
+                  upsert: false,
+                }
+              );
 
-              folder:
-                folder._id,
+          if (error) {
+            throw new Error(
+              `Failed to upload ${file.originalname}: ${error.message}`
+            );
+          }
 
-              uploadedBy: {
-                name:
-                  customerName,
-              },
+          uploadedPaths.push(
+            storagePath
+          );
 
-              fileName:
-                file.originalname,
+          const {
+            data: publicUrlData,
+          } = supabase.storage
+            .from("documents")
+            .getPublicUrl(
+              storagePath
+            );
 
-              fileType:
-                file.mimetype,
+          const fileUrl =
+            publicUrlData.publicUrl;
 
-              fileSize:
-                file.size,
+          const thumbnailUrl =
+            getThumbnailUrl(
+              file.mimetype,
+              fileUrl
+            );
 
-              fileUrl:
-                cloudinaryFile.secure_url,
-
-              publicId:
-                cloudinaryFile.public_id,
-            });
-          })
-        )
+          return File.create({
+            owner: user._id,
+            folder: folder._id,
+            uploadedBy: {
+              name: customerName,
+            },
+            fileName:
+              file.originalname,
+            fileType:
+              file.mimetype,
+            fileSize: file.size,
+            fileUrl,
+            storagePath,
+            thumbnailUrl,
+          });
+        })
       );
 
-    folder.status =
-      "completed";
-
-    await folder.save();
+    await Folder.findByIdAndUpdate(
+      folder._id,
+      {
+        status: "completed",
+      }
+    );
 
     return res.status(201).json({
       success: true,
-
-      folderId:
-        folder._id,
-
+      folderId: folder._id,
       plan:
         reservedSubscription.plan,
-
       totalFiles:
         uploadedFiles.length,
-
       usedUploads:
         reservedSubscription.uploadCount,
-
       usedStorage:
         reservedSubscription.storageUsed,
-
-      files:
-        uploadedFiles,
+      files: uploadedFiles,
     });
   } catch (error) {
     console.error(
@@ -226,9 +271,23 @@ export const uploadCustomerFile = async (
       error
     );
 
-    /**
-     * Rollback quota reservation
-     */
+    if (uploadedPaths.length) {
+      try {
+        await supabase.storage
+          .from("documents")
+          .remove(
+            uploadedPaths
+          );
+      } catch (
+        cleanupError
+      ) {
+        console.error(
+          "Cleanup Error:",
+          cleanupError
+        );
+      }
+    }
+
     if (
       reservedSubscription &&
       totalFileSize > 0
@@ -239,16 +298,16 @@ export const uploadCustomerFile = async (
           {
             $inc: {
               uploadCount:
-                -(req.files as Express.Multer.File[])
-                  .length,
-
+                -(
+                  req.files as Express.Multer.File[]
+                ).length,
               storageUsed:
                 -totalFileSize,
             },
           }
         );
       } catch (
-      rollbackError
+        rollbackError
       ) {
         console.error(
           "Rollback Error:",

@@ -17,7 +17,7 @@ const fileSchema =
                     mongoose.Schema.Types.ObjectId,
 
                 ref: "Folder",
-                index:true , 
+                index: true,
             },
 
             uploadedBy: {
@@ -27,7 +27,18 @@ const fileSchema =
 
             fileName: String,
 
-            fileUrl: String,
+            fileUrl: {
+                type: String,
+                required: true,
+            },
+            thumbnailUrl: {
+                type: String,
+                default: "",
+            },
+            storagePath: {
+                type: String,
+                required: true,
+            },
 
             publicId: String,
 
