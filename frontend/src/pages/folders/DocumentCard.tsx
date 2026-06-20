@@ -1,7 +1,6 @@
 import { memo, useMemo } from "react";
 import {
   Calendar,
-  Download,
   Eye,
   FileText,
   Image as ImageIcon,
@@ -26,7 +25,6 @@ interface DocumentCardProps {
 function DocumentCard({
   file,
   onPreview,
-  onDownload,
 }: DocumentCardProps) {
   const formattedDate = useMemo(() => {
     if (!file.createdAt) return "Recently uploaded";
@@ -196,34 +194,7 @@ function DocumentCard({
             Preview
           </button>
 
-          <button
-            type="button"
-            onClick={() =>
-              onDownload(file)
-            }
-            aria-label={`Download ${file.fileName}`}
-            className="
-              inline-flex
-              items-center
-              justify-center
-              gap-2
-              rounded-xl
-              bg-emerald-600
-              px-4
-              py-2.5
-              text-sm
-              font-medium
-              text-white
-              transition
-              hover:bg-emerald-700
-              focus:outline-none
-              focus:ring-2
-              focus:ring-emerald-300
-            "
-          >
-            <Download size={16} />
-            Download
-          </button>
+           
         </div>
       </div>
     </article>

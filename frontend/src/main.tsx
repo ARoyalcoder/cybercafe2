@@ -1,16 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-
 import { BrowserRouter } from "react-router-dom";
-
 import { Provider } from "react-redux";
 
 import { store } from "./app/store";
-import { Toaster }
-  from "react-hot-toast";
-
 import App from "./App";
-
+import { ThemeProvider } from "./components/Providers/ThemeProvider";
+import { Toaster } from "sonner";
 
 ReactDOM.createRoot(
   document.getElementById("root")!
@@ -18,8 +14,15 @@ ReactDOM.createRoot(
   <React.StrictMode>
     <Provider store={store}>
       <BrowserRouter>
-        <Toaster position="top-right" />
-        <App />
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
+
+        <Toaster
+          richColors
+          position="top-right"
+          expand
+        />
       </BrowserRouter>
     </Provider>
   </React.StrictMode>

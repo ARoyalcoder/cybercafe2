@@ -121,8 +121,8 @@ export default function FolderDetails() {
   if (!data) {
     return (
       <DashboardLayout>
-        <div className="rounded-2xl border bg-white p-8 text-center">
-          Folder not found.
+        <div className="flex flex-1 items-center justify-center min-h-screen ">
+          <Loader />
         </div>
       </DashboardLayout>
     );
@@ -140,13 +140,12 @@ export default function FolderDetails() {
       <section
         className="
           rounded-3xl
-          border
           bg-white
           p-6
           shadow-sm
         "
       >
-        <h1 className="text-3xl font-bold text-slate-900">
+        <h1 className="text-3xl font-bold  ">
           {folder.folderName}
         </h1>
 
@@ -205,7 +204,6 @@ export default function FolderDetails() {
         className="
           mt-6
           rounded-3xl
-          border
           bg-white
           p-6
           shadow-sm
