@@ -133,137 +133,227 @@ export default function FolderDetails() {
     files,
   } = data;
 
-  return (
-    <DashboardLayout>
-      {/* Folder Overview */}
+  return (<DashboardLayout>
+    {/* Folder Header */}
 
-      <section
-        className="
-          rounded-3xl
-          bg-white
-          p-6
-          shadow-sm
-        "
-      >
-        <h1 className="text-3xl font-bold  ">
-          {folder.folderName}
-        </h1>
+
+    <section
+      className="
+    rounded-3xl
+    bg-white/5
+    border
+    border-white/10
+    backdrop-blur-xl
+    p-8
+  "
+    >
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="text-4xl font-bold text-white">
+            {folder.folderName}
+          </h1>
+
+          <p className="mt-2 text-slate-400">
+            Customer document collection folder
+          </p>
+        </div>
 
         <div
           className="
-            mt-5
-            grid
-            gap-4
-            sm:grid-cols-3
-          "
+        self-start
+        rounded-full
+        border
+        border-violet-500/20
+        bg-violet-500/10
+        px-5
+        py-2
+        text-sm
+        font-medium
+        text-violet-400
+      "
         >
-          <div>
-            <p className="text-sm text-slate-500">
-              Customer
-            </p>
-
-            <p className="font-medium">
-              {folder.customerName}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-sm text-slate-500">
-              Documents
-            </p>
-
-            <p className="font-medium">
-              {files.length}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-sm text-slate-500">
-              Created
-            </p>
-
-            <p className="font-medium">
-              {new Intl.DateTimeFormat(
-                "en-IN",
-                {
-                  dateStyle: "medium",
-                }
-              ).format(
-                new Date(
-                  folder.createdAt
-                )
-              )}
-            </p>
-          </div>
+          {files.length} Files
         </div>
-      </section>
+      </div>
 
-      {/* Documents */}
+      {/* Overview Cards */}
 
-      <section
+      <div
         className="
-          mt-6
-          rounded-3xl
-          bg-white
-          p-6
-          shadow-sm
-        "
+    grid
+    grid-cols-1
+    md:grid-cols-2
+    lg:grid-cols-3
+    xl:grid-cols-5
+    gap-6
+  "
+      >        <div
+        className="
+        rounded-2xl
+        border
+        border-white/10
+        bg-white/5
+        p-5
+      "
       >
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold">
+          <p className="text-sm text-slate-400">
+            Customer
+          </p>
+
+          <p className="mt-2 font-semibold text-white">
+            {folder.customerName}
+          </p>
+        </div>
+
+        <div
+          className="
+        rounded-2xl
+        border
+        border-white/10
+        bg-white/5
+        p-5
+      "
+        >
+          <p className="text-sm text-slate-400">
+            Documents
+          </p>
+
+          <p className="mt-2 font-semibold text-white">
+            {files.length}
+          </p>
+        </div>
+
+        <div
+          className="
+        rounded-2xl
+        border
+        border-white/10
+        bg-white/5
+        p-5
+      "
+        >
+          <p className="text-sm text-slate-400">
+            Created
+          </p>
+
+          <p className="mt-2 font-semibold text-white">
+            {new Intl.DateTimeFormat(
+              "en-IN",
+              {
+                dateStyle: "medium",
+              }
+            ).format(
+              new Date(
+                folder.createdAt
+              )
+            )}
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {/* Documents Section */}
+
+    <section
+      className="
+    mt-6
+    rounded-3xl
+    border
+    border-white/10
+    bg-white/5
+    backdrop-blur-xl
+    p-6
+  "
+    >
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-white">
             Documents
           </h2>
 
-          <span
-            className="
-              rounded-full
-              bg-slate-100
-              px-3
-              py-1
-              text-sm
-              font-medium
-            "
-          >
-            {files.length} Files
-          </span>
+          <p className="mt-1 text-sm text-slate-400">
+            Uploaded customer files
+          </p>
         </div>
 
-        {files.length === 0 ? (
-          <div className="py-16 text-center text-slate-500">
-            No documents available.
-          </div>
-        ) : (
+        <span
+          className="
+        rounded-full
+        border
+        border-violet-500/20
+        bg-violet-500/10
+        px-4
+        py-1
+        text-sm
+        font-medium
+        text-violet-400
+      "
+        >
+          {files.length} Files
+        </span>
+      </div>
+
+      {files.length === 0 ? (
+        <div className="py-20 text-center">
           <div
             className="
-              grid
-              grid-cols-1
-              gap-6
-              md:grid-cols-2
-              xl:grid-cols-3
-            "
+          mx-auto
+          flex
+          h-20
+          w-20
+          items-center
+          justify-center
+          rounded-3xl
+          bg-white/5
+          text-4xl
+        "
           >
-            {files.map((file) => (
-              <DocumentCard
-                key={file._id}
-                file={file}
-                onPreview={
-                  handlePreview
-                }
-                onDownload={
-                  handleDownload
-                }
-              />
-            ))}
+            📂
           </div>
-        )}
-      </section>
 
-      <FilePreviewModal
-        file={previewFile}
-        onClose={
-          handleClosePreview
-        }
-      />
-    </DashboardLayout>
+          <h3 className="mt-5 text-xl font-semibold text-white">
+            No Documents Found
+          </h3>
+
+          <p className="mt-2 text-slate-400">
+            Uploaded files will appear here.
+          </p>
+        </div>
+      ) : (
+        <div
+          className="
+        grid
+        grid-cols-1
+        gap-6
+        md:grid-cols-2
+        xl:grid-cols-3
+      "
+        >
+          {files.map((file) => (
+            <DocumentCard
+              key={file._id}
+              file={file}
+              onPreview={
+                handlePreview
+              }
+              onDownload={
+                handleDownload
+              }
+            />
+          ))}
+        </div>
+      )}
+    </section>
+
+    <FilePreviewModal
+      file={previewFile}
+      onClose={
+        handleClosePreview
+      }
+    />
+
+
+  </DashboardLayout>
   );
+
 }

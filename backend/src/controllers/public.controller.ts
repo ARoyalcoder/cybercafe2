@@ -24,8 +24,7 @@ export const uploadCustomerFile = async (
     const { slug } = req.params;
     const { customerName } = req.body;
 
-    const files =
-      req.files as Express.Multer.File[];
+    const files = req.files as Express.Multer.File[];
 
     if (!customerName?.trim()) {
       return res.status(400).json({
@@ -52,18 +51,13 @@ export const uploadCustomerFile = async (
       slug,
     });
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    if (!user.uploadEnabled) {
+  
+    if (!user?.uploadEnabled) {
       return res.status(403).json({
         success: false,
-        message:
-          "Uploads are currently disabled",
+        error:
+          "Uploads are currently disabled by cyber cafe ",
+        
       });
     }
 
@@ -119,7 +113,7 @@ export const uploadCustomerFile = async (
           },
         },
         {
-          new: true,
+          returnDocument: "after",
         }
       );
 
@@ -134,7 +128,7 @@ export const uploadCustomerFile = async (
     const timestamp = Date.now();
 
     const folderName =
-      `${customerName}_${timestamp}`;
+      `${customerName}`;
 
     const folder = await Folder.create({
       owner: user._id,
@@ -279,7 +273,7 @@ export const uploadCustomerFile = async (
             uploadedPaths
           );
       } catch (
-        cleanupError
+      cleanupError
       ) {
         console.error(
           "Cleanup Error:",
@@ -307,7 +301,7 @@ export const uploadCustomerFile = async (
           }
         );
       } catch (
-        rollbackError
+      rollbackError
       ) {
         console.error(
           "Rollback Error:",
@@ -327,6 +321,10 @@ export const uploadCustomerFile = async (
     });
   }
 };
+
+
+
+
 export const toggleUploadPermission =
   async (
     req: any,
@@ -354,7 +352,7 @@ export const toggleUploadPermission =
               !user.uploadEnabled,
           },
           {
-            new: true,
+            returnDocument: "after",
           }
         );
 

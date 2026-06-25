@@ -63,7 +63,7 @@ const StyledWrapper = styled.div`
     right: 32%;
     bottom: -11px;
   /* change the back groung color on switching from light to dark mood */
-    background:#fff;
+    background:#030712;
     transform: translateZ(200px) rotate(var(--r));
     -webkit-animation: mask var(--duration) linear forwards infinite;
     animation: mask var(--duration) linear forwards infinite;

@@ -75,62 +75,75 @@ function DocumentCard({
   }, [file.fileType, file.fileName]);
 
   return (
+
     <article
       className="
-        group
-        overflow-hidden
-        rounded-3xl
-        border
-        border-slate-200
-        bg-white
-        transition-all
-        duration-300
-        hover:-translate-y-1
-        hover:border-blue-200
-        hover:shadow-xl
-      "
+      group
+      overflow-hidden
+      rounded-3xl
+      border
+      border-white/10
+      bg-white/5
+      backdrop-blur-xl
+      transition-all
+      duration-300
+      hover:-translate-y-1
+      hover:border-violet-500/30
+      hover:bg-white/10
+      hover:shadow-[0_0_40px_rgba(139,92,246,0.15)]
+    "
     >
-      {/* Preview Section */}
+      {/* Preview Area */}
 
+      
       <div
         className="
-          relative
-          flex
-          h-44
-          items-center
-          justify-center
-          bg-linear-to-br
-          from-slate-50
-          via-blue-50
-          to-indigo-100
-        "
+    relative
+    flex
+    h-48
+    items-center
+    justify-center
+    bg-gradient-to-br
+    from-violet-500/10
+    via-blue-500/10
+    to-cyan-500/10
+  "
       >
         <FileIcon
-          size={64}
+          size={70}
           className="
-            text-blue-600
-            transition-transform
-            duration-300
-            group-hover:scale-110
-          "
+      text-violet-400
+      transition-all
+      duration-300
+      group-hover:scale-110
+      group-hover:rotate-3
+    "
         />
+
+        {/* File Type Badge */}
 
         <div
           className="
-            absolute
-            right-3
-            top-3
-            rounded-full
-            bg-white/80
-            px-3
-            py-1
-            text-xs
-            font-medium
-            text-slate-600
-            backdrop-blur
-          "
+      absolute
+      top-3
+      right-3
+      rounded-full
+      border
+      border-white/10
+      bg-black/30
+      backdrop-blur-xl
+      px-3
+      py-1
+      text-xs
+      font-medium
+      text-slate-300
+    "
         >
-          Document
+          {file.fileType?.startsWith("image")
+            ? "Image"
+            : file.fileName.endsWith(".pdf")
+              ? "PDF"
+              : "Document"}
         </div>
       </div>
 
@@ -140,24 +153,38 @@ function DocumentCard({
         <h3
           title={file.fileName}
           className="
-            truncate
-            text-base
-            font-semibold
-            text-slate-900
-          "
+      truncate
+      text-base
+      font-semibold
+      text-white
+    "
         >
           {file.fileName}
         </h3>
 
         <div className="mt-4 space-y-3">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
+          <div className="flex items-center gap-2 text-sm text-slate-400">
             <Calendar size={14} />
             <span>{formattedDate}</span>
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-400">
-              ID #{shortId}
+             
+
+            <span
+              className="
+          rounded-full
+          border
+          border-emerald-500/20
+          bg-emerald-500/10
+          px-2.5
+          py-1
+          text-xs
+          font-medium
+          text-emerald-400
+        "
+            >
+              Active
             </span>
           </div>
         </div>
@@ -167,38 +194,62 @@ function DocumentCard({
         <div className="mt-6 grid grid-cols-2 gap-3">
           <button
             type="button"
-            onClick={() =>
-              onPreview(file)
-            }
-            aria-label={`Preview ${file.fileName}`}
+            onClick={() => onPreview(file)}
             className="
-              inline-flex
-              items-center
-              justify-center
-              gap-2
-              rounded-xl
-              bg-blue-600
-              px-4
-              py-2.5
-              text-sm
-              font-medium
-              text-white
-              transition
-              hover:bg-blue-700
-              focus:outline-none
-              focus:ring-2
-              focus:ring-blue-300
-            "
+        inline-flex
+        items-center
+        justify-center
+        gap-2
+        rounded-xl
+        bg-violet-600
+        px-4
+        py-3
+        text-sm
+        font-medium
+        text-white
+        transition-all
+        hover:bg-violet-700
+      "
           >
             <Eye size={16} />
             Preview
           </button>
 
-           
+          <button
+            type="button"
+            onClick={() =>
+              window.open(
+                file.fileUrl,
+                "_blank"
+              )
+            }
+            className="
+        inline-flex
+        items-center
+        justify-center
+        gap-2
+        rounded-xl
+        border
+        border-white/10
+        bg-white/5
+        px-4
+        py-3
+        text-sm
+        font-medium
+        text-slate-300
+        transition-all
+        hover:bg-white/10
+      "
+          >
+            Download
+          </button>
         </div>
       </div>
+      
+
     </article>
   );
+
 }
 
 export default memo(DocumentCard);

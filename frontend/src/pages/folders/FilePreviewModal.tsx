@@ -4,7 +4,7 @@ import {
   useEffect,
   useMemo,
 } from "react";
-
+import { motion } from "framer-motion";
 import {
   X,
   Download,
@@ -68,7 +68,7 @@ function FilePreviewModal({
   const isPdf = useMemo(
     () =>
       file?.fileType ===
-        "application/pdf" ||
+      "application/pdf" ||
       file?.fileName
         ?.toLowerCase()
         .endsWith(".pdf"),
@@ -155,64 +155,79 @@ function FilePreviewModal({
   return (
     <div
       className="
-        fixed
-        inset-0
-        z-50
-        flex
-        items-center
-        justify-center
-        bg-black/80
-        backdrop-blur-sm
-        p-4
-      "
+      fixed
+      inset-0
+      z-50
+      flex
+      items-center
+      justify-center
+      bg-black/80
+      backdrop-blur-md
+      p-4
+    "
       onClick={onClose}
     >
-      <div
+      <motion.div
         role="dialog"
         aria-modal="true"
         aria-labelledby="preview-title"
         onClick={(e) =>
           e.stopPropagation()
         }
+        initial={{
+          opacity: 0,
+          scale: 0.95,
+        }}
+        animate={{
+          opacity: 1,
+          scale: 1,
+        }}
+        transition={{
+          duration: 0.2,
+        }}
         className="
-          relative
-          flex
-          h-[92vh]
-          w-full
-          max-w-7xl
-          flex-col
-          overflow-hidden
-          rounded-3xl
-          bg-white
-          shadow-2xl
-        "
+        relative
+        flex
+        h-[92vh]
+        w-full
+        max-w-7xl
+        flex-col
+        overflow-hidden
+        rounded-4xl
+        border
+        border-white/10
+        bg-[#0f172a]
+        backdrop-blur-2xl
+        shadow-[0_0_60px_rgba(139,92,246,0.15)]
+      "
       >
         {/* Header */}
 
         <div
           className="
-            flex
-            items-center
-            justify-between
-            border-b
-            px-6
-            py-4
-          "
+          flex
+          items-center
+          justify-between
+          border-b
+          border-white/10
+          px-6
+          py-5
+        "
         >
           <div className="min-w-0">
             <h2
               id="preview-title"
               className="
-                truncate
-                text-lg
-                font-semibold
-                text-slate-900
-              "
+              truncate
+              text-lg
+              font-semibold
+              text-white
+            "
             >
               {file.fileName}
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-400">
               Preview Mode
             </p>
           </div>
@@ -224,17 +239,17 @@ function FilePreviewModal({
                 handleDownload
               }
               className="
-                inline-flex
-                items-center
-                gap-2
-                rounded-xl
-                bg-blue-600
-                px-4
-                py-2
-                text-white
-                transition
-                hover:bg-blue-700
-              "
+              inline-flex
+              items-center
+              gap-2
+              rounded-xl
+              bg-violet-600
+              px-4
+              py-2.5
+              text-white
+              transition-all
+              hover:bg-violet-700
+            "
             >
               <Download
                 size={16}
@@ -247,13 +262,13 @@ function FilePreviewModal({
               onClick={onClose}
               aria-label="Close preview"
               className="
-                rounded-xl
-                p-2
-                text-slate-500
-                transition
-                hover:bg-slate-100
-                hover:text-slate-900
-              "
+              rounded-xl
+              p-2
+              text-slate-400
+              transition
+              hover:bg-white/10
+              hover:text-white
+            "
             >
               <X size={20} />
             </button>
@@ -262,9 +277,9 @@ function FilePreviewModal({
 
         {/* Content */}
 
-        <div className="flex-1 overflow-auto bg-slate-50">
+        <div className="flex-1 overflow-auto bg-[#020617]">
           {isImage ? (
-            <div className="relative h-full">
+            <div className="h-full flex items-center justify-center p-6">
               <img
                 src={
                   file.fileUrl
@@ -273,61 +288,66 @@ function FilePreviewModal({
                   file.fileName
                 }
                 className="
-                  h-full
-                  w-full
-                  object-contain
-                "
+                max-h-full
+                max-w-full
+                rounded-2xl
+                object-contain
+              "
               />
             </div>
           ) : isPdf ? (
             <iframe
-              src={file.fileUrl}
-              title={file.fileName}
+              src={`${file.fileUrl}#toolbar=0`}
+              title={
+                file.fileName
+              }
               className="
-                h-full
-                w-full
-                border-0
-              "
+              h-full
+              w-full
+              border-0
+            "
             />
           ) : (
             <div
               className="
-                flex
-                h-full
-                flex-col
-                items-center
-                justify-center
-                gap-6
-                p-8
-                text-center
-              "
+              flex
+              h-full
+              flex-col
+              items-center
+              justify-center
+              gap-6
+              p-8
+              text-center
+            "
             >
               <div
                 className="
-                  relative
-                  h-64
-                  w-64
-                  overflow-hidden
-                  rounded-2xl
-                  border
-                  bg-white
-                  shadow-sm
-                "
+                relative
+                h-64
+                w-64
+                overflow-hidden
+                rounded-2xl
+                border
+                border-white/10
+                bg-white/5
+              "
               >
                 <div
                   className="
-                    absolute
-                    right-3
-                    top-3
-                    z-10
-                    rounded-full
-                    bg-slate-900
-                    px-3
-                    py-1
-                    text-xs
-                    font-medium
-                    text-white
-                  "
+                  absolute
+                  right-3
+                  top-3
+                  z-10
+                  rounded-full
+                  border
+                  border-violet-500/20
+                  bg-violet-500/20
+                  px-3
+                  py-1
+                  text-xs
+                  font-medium
+                  text-violet-300
+                "
                 >
                   {fileExtension}
                 </div>
@@ -344,32 +364,31 @@ function FilePreviewModal({
                       "/file-placeholder.png";
                   }}
                   className="
-                    h-full
-                    w-full
-                    object-contain
-                    p-4
-                  "
+                  h-full
+                  w-full
+                  object-contain
+                  p-4
+                "
                 />
               </div>
 
               <div>
                 <h3
                   className="
-                    text-xl
-                    font-semibold
-                    text-slate-900
-                  "
+                  text-xl
+                  font-semibold
+                  text-white
+                "
                 >
                   {file.fileName}
                 </h3>
 
                 <p
                   className="
-                    mt-1
-                    text-sm
-                    font-medium
-                    text-slate-600
-                  "
+                  mt-1
+                  text-sm
+                  text-slate-400
+                "
                 >
                   {file.fileType ||
                     "Unknown File Type"}
@@ -377,22 +396,22 @@ function FilePreviewModal({
 
                 <p
                   className="
-                    mt-3
-                    max-w-md
-                    text-sm
-                    text-slate-500
-                  "
+                  mt-3
+                  max-w-md
+                  text-sm
+                  text-slate-500
+                "
                 >
-                  This file type
-                  cannot be previewed
-                  directly in the
-                  browser.
+                  Preview is unavailable
+                  for this file type.
+                  You can still
+                  download it.
                 </p>
               </div>
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

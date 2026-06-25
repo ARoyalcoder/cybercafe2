@@ -19,170 +19,202 @@ export default function FolderCard({
     selected,
     onSelect,
 }: Props) {
- 
+
 
     const statusColor = {
         pending:
-            "bg-yellow-100 text-yellow-700",
+            "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20",
 
         completed:
-            "bg-blue-100 text-blue-700",
+            "bg-blue-500/10 text-blue-400 border border-blue-500/20",
 
         approved:
-            "bg-green-100 text-green-700",
+            "bg-green-500/10 text-green-400 border border-green-500/20",
 
         rejected:
-            "bg-red-100 text-red-700",
+            "bg-red-500/10 text-red-400 border border-red-500/20",
     };
 
 
-    // return (
-    //     <Link to={`/folders/${folder._id}`} >
-    //         <motion.div
-    //             onClick={() =>
-    //                 navigate(
-    //                     `/folders/${folder._id}`
-    //                 )
-    //             }
-    //             whileHover={{
-    //                 y: -4,
-    //             }}
-    //             className="bg-white p-5 rounded-xl shadow cursor-pointer"
-    //         >
-    //             <div className="flex justify-between">
-    //                 <input
-    //                     type="checkbox"
-    //                     checked={selected}
-    //                     onChange={() =>
-    //                         onSelect(folder._id)
-    //                     }
-    //                     onClick={(e) =>
-    //                         e.stopPropagation()
-    //                     }
-    //                 />
-
-    //                 <h2 className="font-bold">
-    //                     {folder.folderName}
-    //                 </h2>
-    //             </div>
-    //             <span
-    //                 className={`px-3 py-1 rounded-full text-sm ${statusColor[
-    //                     folder.status as keyof typeof statusColor
-    //                 ]
-    //                     }`}
-    //             >
-    //                 {folder.status}
-    //             </span>
-    //             <p className="text-sm text-gray-500">
-    //                 Customer:{" "}
-    //                 {folder.customerName}
-    //             </p>
-
-    //             <p className="text-sm text-gray-500">
-    //                 Files:{" "}
-    //                 {folder.totalFiles}
-    //             </p>
-    //         </motion.div>
-    //     </Link>
-    // );
     return (
         <motion.div
             whileHover={{
-                y: -4,
+                y: -6,
             }}
             transition={{
                 duration: 0.2,
             }}
+
         >
+
+
             <Link
+
                 to={`/folders/${folder._id}`}
                 className="block"
             >
-                <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all duration-300 group">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
-                                <FolderOpen
-                                    size={24}
-                                    className="text-blue-600"
-                                />
+                <div
+                    className={`
+      group
+      rounded-3xl
+      border
+      backdrop-blur-xl
+      transition-all
+      duration-300
+      overflow-hidden
+
+      ${selected
+                            ? "bg-violet-500/10 border-violet-500/30"
+                            : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-violet-500/20"
+                        }
+    `}
+                >
+                    {/* Top Glow */}
+
+                    <div
+                        className="
+        h-1
+        bg-linear-to-r
+        from-violet-500
+        via-blue-500
+        to-cyan-500
+      "
+                    />
+
+                    <div className="p-5">
+                        {/* Header */}
+
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="
+              w-14
+              h-14
+              rounded-2xl
+              bg-violet-500/10
+              flex
+              items-center
+              justify-center
+            "
+                                >
+                                    <FolderOpen
+                                        size={28}
+                                        className="text-violet-400"
+                                    />
+                                </div>
+
+                                <div>
+                                    <h2 className="font-semibold text-white text-lg line-clamp-1">
+                                        {folder.folderName}
+                                    </h2>
+
+                                    <p className="text-xs text-slate-500">
+                                        #{folder._id.slice(-6)}
+                                    </p>
+                                </div>
                             </div>
 
-                            <div>
-                                <h2 className="font-semibold text-gray-900 text-lg line-clamp-1">
-                                    {folder.folderName}
-                                </h2>
+                            <input
+                                type="checkbox"
+                                checked={selected}
+                                onChange={() =>
+                                    onSelect(folder._id)
+                                }
+                                onClick={(e) =>
+                                    e.stopPropagation()
+                                }
+                                className="
+            h-4
+            w-4
+            accent-violet-500
+          "
+                            />
+                        </div>
 
-                                <p className="text-xs text-gray-500">
-                                    Folder ID: {folder._id.slice(-6)}
-                                </p>
+                        {/* Status */}
+
+                        <div className="mt-5">
+                            <span
+                                className={`
+            inline-flex
+            items-center
+            rounded-full
+            px-3
+            py-1
+            text-xs
+            font-medium
+            ${statusColor[
+                                    folder.status as keyof typeof statusColor
+                                    ]
+                                    }
+          `}
+                            >
+                                {folder.status}
+                            </span>
+                        </div>
+
+                        {/* Details */}
+
+                        <div className="mt-5 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-slate-400">
+                                    <User size={16} />
+                                    <span className="text-sm">
+                                        Customer
+                                    </span>
+                                </div>
+
+                                <span className="text-sm font-medium text-white">
+                                    {folder.customerName}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-slate-400">
+                                    <Files size={16} />
+                                    <span className="text-sm">
+                                        Files
+                                    </span>
+                                </div>
+
+                                <span className="text-sm font-medium text-white">
+                                    {folder.totalFiles}
+                                </span>
                             </div>
                         </div>
 
-                        <input
-                            type="checkbox"
-                            checked={selected}
-                            onChange={() =>
-                                onSelect(folder._id)
-                            }
-                            onClick={(e) =>
-                                e.stopPropagation()
-                            }
-                            className="h-4 w-4 accent-blue-600"
-                        />
-                    </div>
+                        {/* Footer */}
 
-                    {/* Status */}
-                    <div className="mb-4">
-                        <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusColor[
-                                folder.status as keyof typeof statusColor
-                                ]
-                                }`}
+                        <div
+                            className="
+          mt-5
+          pt-4
+          border-t
+          border-white/10
+          flex
+          items-center
+          justify-between
+        "
                         >
-                            {folder.status}
-                        </span>
-                    </div>
-
-                    {/* Details */}
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2 text-gray-500">
-                                <User size={16} />
-                                <span>Customer</span>
-                            </div>
-
-                            <span className="font-medium text-gray-800">
-                                {folder.customerName}
+                            <span className="text-sm font-medium text-violet-400">
+                                Open Folder
                             </span>
+
+                            <ChevronRight
+                                size={18}
+                                className="
+            text-slate-500
+            transition-transform
+            group-hover:translate-x-1
+          "
+                            />
                         </div>
-
-                        <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2 text-gray-500">
-                                <Files size={16} />
-                                <span>Files</span>
-                            </div>
-
-                            <span className="font-medium text-gray-800">
-                                {folder.totalFiles}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Footer */}
-                    <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
-                        <span className="text-sm text-blue-600 font-medium">
-                            View Folder
-                        </span>
-
-                        <ChevronRight
-                            size={18}
-                            className="text-gray-400 group-hover:translate-x-1 transition-transform"
-                        />
                     </div>
                 </div>
             </Link>
-        </motion.div>
+
+
+        </motion.div >
     );
+
 }

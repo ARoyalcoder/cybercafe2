@@ -27,7 +27,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       unique: true,
     },
-
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+    isBlocked: {
+      type: Boolean,
+      default: false
+    },
     qrCode: String,
   },
   {

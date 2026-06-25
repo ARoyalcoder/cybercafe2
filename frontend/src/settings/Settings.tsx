@@ -6,8 +6,8 @@ import {
   Shield,
   Upload,
 } from "lucide-react";
-
-import toast from "react-hot-toast";
+import { toast } from "sonner";
+ 
 import api from "../api/axios";
 import DashboardLayout from "../layouts/DashboardLayout";
 
@@ -57,76 +57,139 @@ export default function Settings() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
+
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-4xl font-bold text-white">
             Settings
           </h1>
 
-          <p className="text-gray-500 mt-2">
-            Manage your account preferences and upload permissions.
+          <p className="text-slate-400 mt-2">
+            Manage account preferences and
+            customer upload permissions.
           </p>
         </div>
 
-        {/* Settings Card */}
-        <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
+        {/* Main Settings Card */}
+
+        <div
+          className="
+          rounded-3xl
+          border
+          border-white/10
+          bg-white/5
+          backdrop-blur-xl
+          overflow-hidden
+        "
+        >
+          {/* Card Header */}
+
+          <div className="p-6 border-b border-white/10">
+            <div className="flex items-center gap-4">
+              <div
+                className="
+                w-14
+                h-14
+                rounded-2xl
+                bg-linear-to-br
+                from-violet-500/20
+                to-cyan-500/20
+                flex
+                items-center
+                justify-center
+              "
+              >
                 <Shield
-                  size={24}
-                  className="text-blue-600"
+                  size={26}
+                  className="text-cyan-400"
                 />
               </div>
 
               <div>
-                <h2 className="text-xl font-semibold">
+                <h2 className="text-xl font-semibold text-white">
                   Upload Permissions
                 </h2>
 
-                <p className="text-gray-500 text-sm">
-                  Control whether customers can upload files.
+                <p className="text-slate-400 text-sm mt-1">
+                  Control whether customers
+                  can upload documents.
                 </p>
               </div>
             </div>
           </div>
 
+          {/* Body */}
+
           <div className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center">
+                <div
+                  className="
+                  w-14
+                  h-14
+                  rounded-2xl
+                  bg-green-500/10
+                  flex
+                  items-center
+                  justify-center
+                "
+                >
                   <Upload
-                    size={22}
-                    className="text-green-600"
+                    size={24}
+                    className="text-green-400"
                   />
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-white">
                     Allow Customer Uploads
                   </h3>
 
-                  <p className="text-sm text-gray-500 mt-1">
-                    Customers can upload files using
-                    your public QR link when enabled.
+                  <p className="text-sm text-slate-400 mt-1 max-w-lg">
+                    Customers can upload
+                    files using your QR code
+                    and public upload link.
                   </p>
                 </div>
               </div>
 
-              {/* Premium Toggle */}
+              {/* Toggle */}
+
               <button
                 onClick={toggleUploads}
-                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 ${uploadEnabled
+                className={`
+                relative
+                inline-flex
+                h-8
+                w-16
+                items-center
+                rounded-full
+                transition-all
+                duration-300
+
+                ${uploadEnabled
                     ? "bg-green-500"
-                    : "bg-gray-300"
-                  }`}
+                    : "bg-slate-700"
+                  }
+              `}
               >
                 <span
-                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-all duration-300 ${uploadEnabled
-                      ? "translate-x-8"
+                  className={`
+                  inline-block
+                  h-6
+                  w-6
+                  rounded-full
+                  bg-white
+                  shadow-lg
+                  transition-all
+                  duration-300
+
+                  ${uploadEnabled
+                      ? "translate-x-9"
                       : "translate-x-1"
-                    }`}
+                    }
+                `}
                 />
               </button>
             </div>
@@ -134,22 +197,55 @@ export default function Settings() {
         </div>
 
         {/* Status Card */}
-        <div className="mt-6 bg-linear-to-r from-blue-600 to-indigo-600 text-white rounded-3xl p-6 shadow-lg">
-          <p className="text-sm opacity-80">
+
+        <div
+          className="
+          mt-8
+          rounded-3xl
+          bg-linear-to-r
+          from-violet-600
+          via-blue-600
+          to-cyan-500
+          p-8
+          text-white
+          shadow-2xl
+        "
+        >
+          <p className="text-white/80 text-sm">
             Current Status
           </p>
 
-          <h3 className="text-2xl font-bold mt-2">
+          <h3 className="text-3xl font-bold mt-3">
             {uploadEnabled
               ? "Uploads Enabled"
               : "Uploads Disabled"}
           </h3>
 
-          <p className="mt-2 text-blue-100">
+          <p className="mt-3 text-white/90 max-w-2xl">
             {uploadEnabled
-              ? "Customers can currently upload files through your public upload page."
-              : "Customer uploads are currently blocked."}
+              ? "Customers can currently upload documents using your public upload page and QR code."
+              : "Customer uploads are currently blocked. Users will not be able to submit files until uploads are enabled again."}
           </p>
+
+          <div className="mt-6 flex items-center gap-3">
+            <div
+              className={`
+              h-3
+              w-3
+              rounded-full
+              ${uploadEnabled
+                  ? "bg-green-300"
+                  : "bg-red-300"
+                }
+            `}
+            />
+
+            <span className="font-medium">
+              {uploadEnabled
+                ? "System Operational"
+                : "System Restricted"}
+            </span>
+          </div>
         </div>
       </div>
     </DashboardLayout>

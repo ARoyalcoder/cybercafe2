@@ -4,7 +4,8 @@ import {
 } from "react";
 import {
   ChevronDown,
- 
+  LinkIcon,
+
 } from "lucide-react";
 import { getProfile } from "../../api/authApi";
 
@@ -25,35 +26,27 @@ export default function Navbar() {
   return (
     <header
       className="
-        sticky
-        top-0
-        z-40
-        h-20
-        px-6
-        bg-white/80
-        backdrop-blur-xl
-        border-b
-        border-gray-200
-        flex
-        items-center
-        justify-between
-      "
+      h-20
+      px-8
+      flex
+      items-center
+      justify-between
+    "
     >
-      {/* Left Section */}
+      {/* Left */}
 
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-white">
           Dashboard
         </h2>
 
-        <p className="text-sm text-gray-500">
-          Welcome back,
-          {" "}
+        <p className="text-sm text-slate-400">
+          Welcome back,{" "}
           {user?.name || "User"}
         </p>
       </div>
 
-      {/* Right Section */}
+      {/* Right */}
 
       <div className="flex items-center gap-4">
         {/* Search */}
@@ -62,7 +55,856 @@ export default function Navbar() {
 
 
 
-        {/* User Profile */}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        {/* Notifications */}
+
+
+        {/* Profile */}
 
         <div
           className="relative"
@@ -75,94 +917,96 @@ export default function Navbar() {
         >
           <button
             className="
-      flex
-      items-center
-      gap-3
-      bg-white
-      border
-      border-gray-200
-      rounded-2xl
-      px-3
-      py-2
-      hover:shadow-md
-      transition
-    "
+            flex
+            items-center
+            gap-3
+            rounded-2xl
+            border
+            border-white/10
+            bg-white/5
+            px-3
+            py-2
+            backdrop-blur-xl
+          "
           >
             <div
               className="
-        w-11
-        h-11
-        rounded-full
-        bg-linear-to-br
-        from-blue-600
-        to-indigo-600
-        text-white
-        flex
-        items-center
-        justify-center
-        font-bold
-      "
+              h-11
+              w-11
+              rounded-full
+              bg-linear-to-br
+              from-violet-600
+              via-blue-600
+              to-cyan-500
+              flex
+              items-center
+              justify-center
+              text-white
+              font-bold
+            "
             >
-              {user?.name?.charAt(0)}
+              {user?.name
+                ?.charAt(0)
+                ?.toUpperCase()}
             </div>
 
             <div className="hidden md:block text-left">
-              <p className="font-semibold text-sm text-gray-900">
+              <p className="text-sm font-semibold text-white">
                 {user?.name}
               </p>
 
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-slate-400">
                 Administrator
               </p>
             </div>
 
             <ChevronDown
               size={16}
-              className="text-gray-400"
+              className="text-slate-500"
             />
           </button>
 
-          {/* Dropdown */}
           {showProfile && (
             <div
               className="
-        absolute
-        right-0
-        top-16
-        w-96
-        bg-white
-        rounded-3xl
-        border
-        border-gray-200
-        shadow-2xl
-        overflow-hidden
-        z-50
-      "
+              absolute
+              right-0
+              top-16
+              w-105
+              overflow-hidden
+              rounded-3xl
+              border
+              border-white/10
+              bg-[#0f172a]
+              backdrop-blur-2xl
+              shadow-2xl
+            "
             >
               {/* Header */}
 
               <div
                 className="
-          bg-linear-to-br
-          from-blue-600
-          to-indigo-600
-          p-6
-          text-white
-        "
+                bg-linear-to-r
+                from-violet-600
+                via-blue-600
+                to-cyan-500
+                p-6
+                text-white
+              "
               >
                 <div className="flex items-center gap-4">
                   <div
                     className="
-              w-16
-              h-16
-              rounded-full
-              bg-white/20
-              flex
-              items-center
-              justify-center
-              text-2xl
-              font-bold
-            "
+                    h-16
+                    w-16
+                    rounded-full
+                    bg-white/20
+                    flex
+                    items-center
+                    justify-center
+                    text-2xl
+                    font-bold
+                  "
                   >
                     {user?.name
                       ?.charAt(0)
@@ -174,7 +1018,7 @@ export default function Navbar() {
                       {user?.name}
                     </h3>
 
-                    <p className="text-blue-100 text-sm">
+                    <p className="text-sm text-white/80">
                       {user?.email}
                     </p>
                   </div>
@@ -185,25 +1029,41 @@ export default function Navbar() {
 
               <div className="p-5 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-50 rounded-2xl p-4">
-                    <p className="text-xs text-gray-500">
-                      Account Type
+                  <div
+                    className="
+                    rounded-2xl
+                    border
+                    border-white/10
+                    bg-white/5
+                    p-4
+                  "
+                  >
+                    <p className="text-xs text-slate-500">
+                      Account
                     </p>
 
-                    <p className="font-semibold mt-1">
+                    <p className="mt-1 font-semibold text-white">
                       Premium
                     </p>
                   </div>
 
-                  <div className="bg-gray-50 rounded-2xl p-4">
-                    <p className="text-xs text-gray-500">
-                      Upload Status
+                  <div
+                    className="
+                    rounded-2xl
+                    border
+                    border-white/10
+                    bg-white/5
+                    p-4
+                  "
+                  >
+                    <p className="text-xs text-slate-500">
+                      Uploads
                     </p>
 
                     <p
-                      className={`font-semibold mt-1 ${user?.uploadEnabled
-                        ? "text-green-600"
-                        : "text-red-600"
+                      className={`mt-1 font-semibold ${user?.uploadEnabled
+                          ? "text-green-400"
+                          : "text-red-400"
                         }`}
                     >
                       {user?.uploadEnabled
@@ -213,48 +1073,47 @@ export default function Navbar() {
                   </div>
                 </div>
 
-                {/* Public Link */}
-
-                <div className="bg-gray-50 rounded-2xl p-4">
-                  <p className="text-xs text-gray-500 mb-2">
+                <div
+                  className="
+                  rounded-2xl
+                  border
+                  border-white/10
+                  bg-white/5
+                  p-4
+                "
+                >
+                  <div className="flex items-center gap-2 mb-2 text-slate-400">
+                    <LinkIcon size={14} />
                     Public Upload Link
-                  </p>
+                  </div>
 
-                  <p className="text-sm break-all text-gray-700">
+                  <p className="break-all text-sm text-white">
                     {user?.publicLink}
                   </p>
                 </div>
 
-                {/* User Info */}
-
                 <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500">
                       User ID
                     </span>
 
-                    <span className="font-medium">
+                    <span className="text-white">
                       {user?._id?.slice(-8)}
                     </span>
                   </div>
 
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">
-                      Joined
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500">
+                      Email
                     </span>
 
-                    <span className="font-medium">
-                      {new Date(
-                        user?.createdAt
-                      ).toLocaleDateString()}
+                    <span className="text-white">
+                      {user?.email}
                     </span>
                   </div>
                 </div>
               </div>
-
-              {/* Footer */}
-
-              
             </div>
           )}
         </div>
