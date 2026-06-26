@@ -9,7 +9,7 @@ export default function UploadHero() {
   return (
     <div
       className="
-        bg-gradient-to-br
+        bg-linear-to-br
         from-violet-600
         via-blue-600
         to-cyan-500

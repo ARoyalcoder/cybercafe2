@@ -216,7 +216,7 @@ export default function UploadForm({
           mt-8
           w-full
           rounded-2xl
-          bg-gradient-to-r
+          bg-linear-to-r
           from-violet-600
           to-blue-600
           py-4

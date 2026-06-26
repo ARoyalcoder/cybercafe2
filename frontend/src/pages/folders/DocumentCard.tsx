@@ -41,10 +41,7 @@ function DocumentCard({
     );
   }, [file.createdAt]);
 
-  const shortId = useMemo(
-    () => file._id.slice(-8),
-    [file._id]
-  );
+  
 
   const FileIcon = useMemo(() => {
     if (
@@ -103,7 +100,7 @@ function DocumentCard({
     h-48
     items-center
     justify-center
-    bg-gradient-to-br
+    bg-linear-to-br
     from-violet-500/10
     via-blue-500/10
     to-cyan-500/10

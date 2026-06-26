@@ -25,7 +25,7 @@ export default function PaymentFailed() {
         className="
           max-w-md
           w-full
-          bg-white
+        bg-white/5
           rounded-4xl
           shadow-2xl
           border

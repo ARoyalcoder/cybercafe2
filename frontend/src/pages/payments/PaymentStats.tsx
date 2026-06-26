@@ -89,7 +89,7 @@ export default function PaymentStats({
                     w-14
                     h-14
                     rounded-2xl
-                    bg-gradient-to-br
+                    bg-linear-to-br
                     ${item.color}
                     flex
                     items-center
