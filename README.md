@@ -1,0 +1,71 @@
+# Pawan Putra Business OS
+
+Business operating system (CRM and operations) for a multi-service company with exactly six
+business verticals:
+
+1. CCTV & Security
+2. Digital Marketing
+3. Interior Design
+4. Architecture & Tech
+5. Solar
+6. IT Support
+
+This repository currently contains the **platform foundation**: architecture, conventions, tooling and
+the database foundation (organizations, branches, users, roles, permissions and the service catalog).
+No CRM business modules (leads, customers, ...) are implemented yet.
+
+## Stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | React 19, TypeScript, Vite, React Router, TanStack Query, TanStack Table, React Hook Form, Zod, Tailwind CSS 4, shadcn/ui, Recharts, Lucide |
+| Backend | Java 21, Spring Boot 4, Spring Security, Spring Data JPA (Hibernate), Bean Validation, Flyway, Spring Scheduler, Actuator, springdoc OpenAPI |
+| Data | PostgreSQL (source of truth), Redis (cache), MinIO / S3-compatible object storage |
+| Infrastructure | Docker, Docker Compose, Nginx |
+| Testing | JUnit 5, Mockito, ArchUnit, Testcontainers, REST Assured, Playwright, k6 |
+
+## Quick start
+
+Prerequisites: JDK 21+, Node 22+, Docker.
+
+```bash
+cp .env.example .env            # local credentials for the containers
+docker compose up -d            # PostgreSQL, Redis, MinIO
+
+cd backend && ./mvnw spring-boot:run     # API on http://localhost:8080
+cd frontend && npm install && npm run dev # UI on http://localhost:5173
+```
+
+- UI: <http://localhost:5173>
+- API docs (local profile only): <http://localhost:8080/swagger-ui.html>
+- Health: <http://localhost:8080/actuator/health>
+
+To run everything in containers behind Nginx instead: `docker compose --profile app up -d --build`,
+then open <http://localhost:8088>.
+
+## Repository layout
+
+```
+backend/        Spring Boot modular monolith (one deployable)
+frontend/       React single-page app, plus the Nginx config that serves it
+perf/k6/        Load / smoke test scripts
+docs/           Architecture and conventions (start here before adding a module)
+docker-compose.yml, .env.example
+```
+
+## Documentation
+
+| Document | Read it when |
+| --- | --- |
+| [docs/architecture.md](docs/architecture.md) | You want to know how the system is structured and why |
+| [docs/database.md](docs/database.md) | You are adding a table, a migration or an entity |
+| [docs/api-conventions.md](docs/api-conventions.md) | You are adding or consuming an endpoint (includes the error format) |
+| [docs/logging.md](docs/logging.md) | You are adding log statements or debugging a request |
+| [docs/development.md](docs/development.md) | You are setting up, running tests, or adding a new module |
+
+## Verifying a change
+
+```bash
+cd backend && ./mvnw verify          # unit + architecture tests; integration tests need Docker
+cd frontend && npm run lint && npm run build && npm run test:e2e
+```
