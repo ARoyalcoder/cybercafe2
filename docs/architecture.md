@@ -20,7 +20,8 @@ One backend deployable, one database, one frontend. No microservices.
 | **PostgreSQL is the source of truth** | Every durable fact lives in PostgreSQL. Redis holds only derived data that can be rebuilt; object storage holds only bytes whose metadata is in PostgreSQL. |
 | **Flyway owns the schema** | Hibernate runs with `ddl-auto: validate`: it checks the mapping against the schema at start-up and never changes it. Every schema change is a reviewed, versioned SQL file. |
 | **Stateless REST API under `/api/v1`** | No server sessions, so instances can be added behind Nginx without sticky routing. The version is in the path so a breaking `/api/v2` can run alongside. |
-| **Deny by default** | Every endpoint needs authentication unless it is on the short allow-list in `SecurityConfig`. A new endpoint is private until someone deliberately makes it public. |
+| **Deny by default** | Every endpoint needs a valid access token unless it is on the short allow-list in `SecurityConfig`. A new endpoint is private until someone deliberately makes it public. |
+| **Backend-enforced, permission-based access** | Short-lived JWT access tokens plus rotating, revocable refresh tokens. Code checks `MODULE_ACTION` permissions; roles are data that bundle them. The UI hides what a user cannot do but enforces nothing. See [security.md](security.md). |
 | **One error format** | All failures, including ones raised by Spring Security and the framework, return the same `application/problem+json` body with a stable `code`. See [api-conventions.md](api-conventions.md). |
 | **Java 21 language level** | The build targets release 21 whatever JDK runs it; the container image uses a Java 21 runtime. |
 
@@ -35,12 +36,12 @@ platform/            Shared kernel. Knows nothing about any business module.
   event/               DomainEvent + DomainEventPublisher (the seam between modules)
   logging/             Request correlation id + access log
   persistence/         Entity base classes (BaseEntity, AuditableEntity, SoftDeletableEntity), JPA auditing
-  security/            Security filter chain, CORS
+  security/            Security filter chain, JWT signing/verification, CurrentUser, CORS
   storage/             ObjectStorage port + S3 implementation
   web/                 Error response, exception handler, PageResponse, ApiPaths
 
 system/              Public build/version info
-identity/            Organizations, branches, users, roles, permissions (who exists and what they may do)
+identity/            Organizations, branches, users, roles, permissions; sign-in, sessions, passwords
 catalog/             Service verticals, categories and services (what the company sells)
 <module>/            Every business module follows the same shape:
   api/                 What OTHER modules may use: enums, ids, service interfaces, event records

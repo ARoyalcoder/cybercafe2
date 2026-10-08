@@ -12,10 +12,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -57,6 +59,15 @@ public class User extends SoftDeletableEntity {
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
 
+    @Column(name = "failed_login_attempts", nullable = false)
+    private int failedLoginAttempts;
+
+    @Column(name = "locked_until")
+    private Instant lockedUntil;
+
+    @Column(name = "password_changed_at")
+    private Instant passwordChangedAt;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserRole> roleAssignments = new HashSet<>();
 
@@ -84,6 +95,58 @@ public class User extends SoftDeletableEntity {
 
     public void removeRole(Role role) {
         roleAssignments.removeIf(a -> a.getRole().equals(role));
+    }
+
+    /** Sign-in is refused while locked, even with the right password. */
+    public boolean isLocked(Instant now) {
+        return lockedUntil != null && lockedUntil.isAfter(now);
+    }
+
+    /** Counts a wrong password; the {@code maxAttempts}-th one in a row locks the account for {@code lockFor}. */
+    public void recordFailedLogin(Instant now, int maxAttempts, Duration lockFor) {
+        failedLoginAttempts++;
+        if (failedLoginAttempts >= maxAttempts) {
+            lockedUntil = now.plus(lockFor);
+            failedLoginAttempts = 0;
+        }
+    }
+
+    public void recordSuccessfulLogin(Instant now) {
+        failedLoginAttempts = 0;
+        lockedUntil = null;
+        lastLoginAt = now;
+    }
+
+    /**
+     * Sets a new password hash and clears any lock. A user who was only {@link UserStatus#INVITED}
+     * becomes {@link UserStatus#ACTIVE}: setting the first password is how an invitation is accepted.
+     */
+    public void changePassword(String newPasswordHash, Instant now) {
+        passwordHash = newPasswordHash;
+        passwordChangedAt = now;
+        failedLoginAttempts = 0;
+        lockedUntil = null;
+        if (status == UserStatus.INVITED) {
+            status = UserStatus.ACTIVE;
+        }
+    }
+
+    public boolean isActive() {
+        return status == UserStatus.ACTIVE && !isDeleted();
+    }
+
+    /** Codes of the user's active roles. */
+    public Set<String> activeRoleCodes() {
+        return getRoles().stream().filter(Role::isActive).map(Role::getCode)
+                .collect(Collectors.toCollection(TreeSet::new));
+    }
+
+    /** Codes of every active permission granted through an active role. */
+    public Set<String> activePermissionCodes() {
+        return getRoles().stream().filter(Role::isActive)
+                .flatMap(role -> role.getPermissions().stream())
+                .filter(Permission::isActive).map(Permission::getCode)
+                .collect(Collectors.toCollection(TreeSet::new));
     }
 
     public Set<Role> getRoles() {
@@ -130,10 +193,6 @@ public class User extends SoftDeletableEntity {
         return passwordHash;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
     public UserStatus getStatus() {
         return status;
     }
@@ -146,7 +205,15 @@ public class User extends SoftDeletableEntity {
         return lastLoginAt;
     }
 
-    public void setLastLoginAt(Instant lastLoginAt) {
-        this.lastLoginAt = lastLoginAt;
+    public int getFailedLoginAttempts() {
+        return failedLoginAttempts;
+    }
+
+    public Instant getLockedUntil() {
+        return lockedUntil;
+    }
+
+    public Instant getPasswordChangedAt() {
+        return passwordChangedAt;
     }
 }

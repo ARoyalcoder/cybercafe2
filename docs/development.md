@@ -28,6 +28,9 @@ npm run dev                               # http://localhost:5173  (proxies /api
 The `local` profile's defaults match `.env.example`, so the backend needs no environment variables.
 Flyway applies migrations at start-up.
 
+**Signing in locally:** on a fresh database the `local` profile creates a super admin. The email and
+password are the `bootstrap-admin` values in `backend/src/main/resources/application-local.yml`.
+
 ### Whole stack in containers
 
 ```bash
@@ -47,6 +50,9 @@ complete list; the most important ones:
 | `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` | Redis connection | `localhost:6379` |
 | `CACHE_TYPE` | `redis`, or `simple` to run without Redis | `redis` |
 | `STORAGE_ENDPOINT`, `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY`, `STORAGE_SECRET_KEY` | S3-compatible storage | MinIO on `localhost:9000` |
+| `JWT_SECRET` | Signing key for access tokens, 32+ characters. Required outside `local` | dev-only value |
+| `AUTH_COOKIE_SECURE` | Refresh cookie over HTTPS only | `false` locally, `true` otherwise |
+| `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | First administrator, used only while there are no users | set in `local` |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated browser origins allowed to call the API | `http://localhost:5173` |
 | `API_DOCS_ENABLED` | Expose Swagger UI and `/v3/api-docs` | `true` locally, `false` in prod |
 | `APP_LOG_LEVEL` | Log level for application code | `DEBUG` locally, `INFO` in prod |
@@ -100,10 +106,14 @@ Example: a `lead` module.
 4. **Service** in `internal/`: `@Transactional`, throws `ApiException` subclasses, publishes domain
    events through `DomainEventPublisher` for anything other modules care about.
 5. **Controller** in `web/`: mapped under `ApiPaths.V1`, DTO records in and out, `@Valid` on request
-   bodies, `@Tag`/`@Operation` for the docs. It is private by default; add `@PreAuthorize` rules.
-6. **Tests**: a unit test for the rules, a web-slice test for the contract, an `*IT` for persistence.
+   bodies, `@Tag`/`@Operation` for the docs. It needs a valid token by default; add the module's
+   permissions and `@PreAuthorize` checks as described in [security.md](security.md#roles-and-permissions),
+   and scope every query by `CurrentUser.require().organizationId()`.
+6. **Tests**: a unit test for the rules, a web-slice test for the contract including a 401 and a 403
+   case, an `*IT` for persistence.
 7. **Frontend**: `src/features/lead/` with `api.ts` (Zod schemas + `queryOptions`), `components/`,
-   `pages/`; register the route in `src/app/router.tsx` and the menu entry in `src/config/navigation.ts`.
+   `pages/`; register the route in `src/app/router.tsx` (wrapped in `RequirePermission`) and the menu
+   entry in `src/config/navigation.ts` (with its `permission`).
 8. Run `./mvnw verify`: `ArchitectureTest` fails if the module reaches into another module's internals.
 
 ## Troubleshooting

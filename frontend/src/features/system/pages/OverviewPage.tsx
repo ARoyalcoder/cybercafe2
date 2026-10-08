@@ -1,13 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
 import { ErrorState } from '@/components/feedback/ErrorState'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useAuth } from '@/features/auth/auth-context'
 import { businessVerticalsQuery, systemInfoQuery } from '@/features/system/api'
 import { VerticalsTable } from '@/features/system/components/VerticalsTable'
 
 export function OverviewPage() {
   const verticals = useQuery(businessVerticalsQuery)
   const info = useQuery(systemInfoQuery)
+  const { user } = useAuth()
 
   return (
     <div className="grid gap-6">
@@ -41,6 +44,39 @@ export function OverviewPage() {
           )}
         </CardContent>
       </Card>
+
+      {user ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Your access</CardTitle>
+            <CardDescription>
+              Signed in as {user.fullName}. What you can do is decided by your roles.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3 text-sm">
+            <div className="flex flex-wrap items-center gap-1.5" aria-label="Your roles">
+              <span className="mr-1 text-muted-foreground">Roles</span>
+              {user.roles.length > 0 ? (
+                user.roles.map((role) => <Badge key={role}>{role}</Badge>)
+              ) : (
+                <span className="text-muted-foreground">None</span>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5" aria-label="Your permissions">
+              <span className="mr-1 text-muted-foreground">Permissions</span>
+              {user.permissions.length > 0 ? (
+                user.permissions.map((permission) => (
+                  <Badge key={permission} variant="secondary" className="font-mono">
+                    {permission}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-muted-foreground">None</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader>

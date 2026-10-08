@@ -31,8 +31,8 @@ class IdentityPersistenceIT extends AbstractIntegrationTest {
         headOffice.setHeadOffice(true);
         branches.save(headOffice);
 
-        Permission permission = permissions.save(new Permission("catalog.service.write", "Edit services"));
-        Role role = new Role("CATALOG_MANAGER", "Catalog manager", false);
+        Permission permission = permissions.save(new Permission("TESTMODULE_WRITE", "Test permission"));
+        Role role = new Role("TEST_CATALOG_MANAGER", "Test role", false);
         role.grant(permission);
         roles.save(role);
 
@@ -49,9 +49,9 @@ class IdentityPersistenceIT extends AbstractIntegrationTest {
         assertThat(loaded.getStatus()).isEqualTo(UserStatus.INVITED);
         assertThat(loaded.getOrganization().getCode()).isEqualTo("PPG");
         assertThat(loaded.getBranch().getName()).isEqualTo("Head Office");
-        assertThat(loaded.getRoles()).extracting(Role::getCode).containsExactly("CATALOG_MANAGER");
+        assertThat(loaded.getRoles()).extracting(Role::getCode).containsExactly("TEST_CATALOG_MANAGER");
         assertThat(loaded.getRoles().iterator().next().getPermissions())
-                .extracting(Permission::getCode).containsExactly("catalog.service.write");
+                .extracting(Permission::getCode).containsExactly("TESTMODULE_WRITE");
 
         // Audit columns are filled in by JPA auditing; with no signed-in user the actor is "system".
         assertThat(loaded.getCreatedAt()).isNotNull();
@@ -138,7 +138,7 @@ class IdentityPersistenceIT extends AbstractIntegrationTest {
     @Test
     void roleThatIsStillAssignedCannotBeDeleted() {
         Organization org = organizations.save(new Organization("PPG", "Pawan Putra Group"));
-        Role role = roles.save(new Role("SALES_EXECUTIVE", "Sales executive", false));
+        Role role = roles.findByCode("SALES_EXECUTIVE").orElseThrow();
         User user = new User(org, "asha@example.com", "Asha");
         user.assignRole(role);
         users.saveAndFlush(user);
@@ -160,8 +160,8 @@ class IdentityPersistenceIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void permissionCodeMustBeDottedLowerCase() {
-        assertThatThrownBy(() -> permissions.saveAndFlush(new Permission("Catalog Write", "Bad code")))
+    void permissionCodeMustBeModuleAction() {
+        assertThatThrownBy(() -> permissions.saveAndFlush(new Permission("catalog.service.write", "Bad code")))
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .hasMessageContaining("ck_permissions_code_format");
     }

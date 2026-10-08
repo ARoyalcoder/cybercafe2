@@ -6,29 +6,61 @@ type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
   signal?: AbortSignal
+  /**
+   * `false` for the endpoints that are called without an access token (login, refresh, logout,
+   * password reset). Those must not send a stale token, and a 401 from them is final.
+   */
+  authenticated?: boolean
 }
 
 const REQUEST_ID_HEADER = 'X-Request-Id'
 
+// The access token lives in memory only: never in localStorage, where any injected script could read it.
+// It is lost on a page reload and recovered from the HttpOnly refresh cookie (see features/auth/session.ts).
+let accessToken: string | null = null
+
+export function setAccessToken(token: string | null) {
+  accessToken = token
+}
+
+/** Called when a request is rejected with 401; resolves to true if a new access token was obtained. */
+type UnauthorizedHandler = () => Promise<boolean>
+let unauthorizedHandler: UnauthorizedHandler | null = null
+
+export function setUnauthorizedHandler(handler: UnauthorizedHandler) {
+  unauthorizedHandler = handler
+}
+
 /**
  * The only place the app talks HTTP. Every response is validated against a Zod schema, and every
  * failure - server error body, network failure, unexpected payload - surfaces as an ApiError.
+ * An expired access token is renewed once, transparently, and the request is repeated.
  */
-export async function apiRequest<T>(
-  path: string,
-  schema: z.ZodType<T>,
-  options: RequestOptions = {},
-): Promise<T> {
-  const { method = 'GET', body, signal } = options
+export async function apiRequest<T>(path: string, schema: z.ZodType<T>, options: RequestOptions = {}): Promise<T> {
+  const { authenticated = true } = options
 
-  let response: Response
+  let response = await send(path, options)
+  if (response.status === 401 && authenticated && unauthorizedHandler) {
+    const renewed = await unauthorizedHandler()
+    if (renewed) {
+      response = await send(path, options)
+    }
+  }
+  return parse(response, schema, options.method ?? 'GET', path)
+}
+
+async function send(path: string, options: RequestOptions): Promise<Response> {
+  const { method = 'GET', body, signal, authenticated = true } = options
   try {
-    response = await fetch(`${env.apiBaseUrl}${path}`, {
+    return await fetch(`${env.apiBaseUrl}${path}`, {
       method,
       signal,
+      // Sends the refresh cookie to the /auth endpoints. The API is same-origin (proxied), so 'same-origin' is enough.
+      credentials: 'same-origin',
       headers: {
         Accept: 'application/json, application/problem+json',
         ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...(authenticated && accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
     })
@@ -42,9 +74,12 @@ export async function apiRequest<T>(
       message: 'Could not reach the server. Check your connection and try again.',
     })
   }
+}
 
+async function parse<T>(response: Response, schema: z.ZodType<T>, method: string, path: string): Promise<T> {
   const requestId = response.headers.get(REQUEST_ID_HEADER) ?? undefined
-  const payload: unknown = response.status === 204 ? undefined : await readJson(response)
+  const hasBody = response.status !== 204 && response.status !== 202
+  const payload: unknown = hasBody ? await readJson(response) : undefined
 
   if (!response.ok) {
     const problem = apiProblemSchema.safeParse(payload)

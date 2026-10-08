@@ -1,9 +1,17 @@
+import { LogOut } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
 import { navigation } from '@/config/navigation'
+import { useAuth } from '@/features/auth/auth-context'
 import { cn } from '@/lib/utils'
 
 /** Side rail on desktop, top bar on small screens. */
 export function Sidebar() {
+  const { user, signOut } = useAuth()
+  const visibleItems = navigation.filter(
+    (item) => !item.permission || user?.permissions.includes(item.permission),
+  )
+
   return (
     <aside className="flex shrink-0 items-center gap-4 border-b bg-sidebar px-4 py-3 md:w-60 md:flex-col md:items-stretch md:gap-6 md:border-r md:border-b-0 md:py-6">
       <div className="flex items-center gap-2.5 md:px-2">
@@ -19,8 +27,8 @@ export function Sidebar() {
         </div>
       </div>
 
-      <nav aria-label="Main" className="flex gap-1 md:flex-col">
-        {navigation.map((item) => (
+      <nav aria-label="Main" className="flex flex-1 gap-1 md:flex-col">
+        {visibleItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -37,6 +45,18 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      {user ? (
+        <div className="flex items-center gap-2 md:border-t md:px-2 md:pt-4">
+          <div className="hidden min-w-0 flex-1 leading-tight md:block">
+            <p className="truncate text-sm font-medium">{user.fullName}</p>
+            <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+          </div>
+          <Button variant="ghost" size="icon" aria-label="Sign out" title="Sign out" onClick={() => void signOut()}>
+            <LogOut aria-hidden="true" />
+          </Button>
+        </div>
+      ) : null}
     </aside>
   )
 }

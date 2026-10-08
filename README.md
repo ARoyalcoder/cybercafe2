@@ -11,7 +11,8 @@ business verticals:
 6. IT Support
 
 This repository currently contains the **platform foundation**: architecture, conventions, tooling and
-the database foundation (organizations, branches, users, roles, permissions and the service catalog).
+the database foundation (organizations, branches, users, roles, permissions and the service catalog),
+and authentication with role/permission-based authorization.
 No CRM business modules (leads, customers, ...) are implemented yet.
 
 ## Stack
@@ -36,7 +37,7 @@ cd backend && ./mvnw spring-boot:run     # API on http://localhost:8080
 cd frontend && npm install && npm run dev # UI on http://localhost:5173
 ```
 
-- UI: <http://localhost:5173>
+- UI: <http://localhost:5173> (sign in with the local admin from `backend/src/main/resources/application-local.yml`)
 - API docs (local profile only): <http://localhost:8080/swagger-ui.html>
 - Health: <http://localhost:8080/actuator/health>
 
@@ -59,6 +60,7 @@ docker-compose.yml, .env.example
 | --- | --- |
 | [docs/architecture.md](docs/architecture.md) | You want to know how the system is structured and why |
 | [docs/database.md](docs/database.md) | You are adding a table, a migration or an entity |
+| [docs/security.md](docs/security.md) | You are protecting an endpoint, adding a permission, or deploying |
 | [docs/api-conventions.md](docs/api-conventions.md) | You are adding or consuming an endpoint (includes the error format) |
 | [docs/logging.md](docs/logging.md) | You are adding log statements or debugging a request |
 | [docs/development.md](docs/development.md) | You are setting up, running tests, or adding a new module |

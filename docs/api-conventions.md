@@ -86,8 +86,10 @@ Every error, from any layer, has this body with `Content-Type: application/probl
 | --- | --- | --- |
 | `VALIDATION_FAILED` | 400 | A field failed validation; see `errors` |
 | `MALFORMED_REQUEST` | 400 | Unreadable JSON, wrong parameter type, missing parameter |
-| `UNAUTHENTICATED` | 401 | No valid credentials |
-| `FORBIDDEN` | 403 | Authenticated but not allowed |
+| `UNAUTHENTICATED` | 401 | Missing, invalid or expired access token, or the session has ended |
+| `INVALID_CREDENTIALS` | 401 | Sign-in failed (wrong email, wrong password or locked account; deliberately not distinguished) |
+| `FORBIDDEN` | 403 | Authenticated but lacking the required permission |
+| `ACCOUNT_INACTIVE` | 403 | Correct password, but the account is switched off |
 | `RESOURCE_NOT_FOUND` | 404 | Unknown resource or route |
 | `METHOD_NOT_ALLOWED` | 405 | |
 | `NOT_ACCEPTABLE` | 406 | |
@@ -116,10 +118,15 @@ details. Anything else that escapes a controller becomes `INTERNAL_ERROR` with a
 
 ## Authentication and authorisation
 
-- The API is stateless. Requests will carry `Authorization: Bearer <token>`; the token mechanism
-  arrives with the identity module.
-- Every endpoint requires authentication unless listed in `SecurityConfig.PUBLIC_GET_ENDPOINTS`.
-- Authorise with `@PreAuthorize` on service or controller methods (method security is enabled).
+Full description: [security.md](security.md).
+
+- The API is stateless. Requests carry `Authorization: Bearer <access token>`.
+- Every endpoint requires a valid token unless it is listed in `SecurityConfig`
+  (`PUBLIC_GET_ENDPOINTS`, `PUBLIC_AUTH_ENDPOINTS`).
+- What a user may do is checked per method with `@PreAuthorize("hasAuthority('MODULE_ACTION')")`.
+- `401` means "we do not know who you are" (the client should refresh or sign in);
+  `403` means "we know who you are and you may not do this" (retrying will not help).
+- A resource that exists but belongs to another organization is `404`, not `403`.
 
 ## Headers
 

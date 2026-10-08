@@ -24,6 +24,15 @@ logging:
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  security:
+    jwt:
+      secret: ${JWT_SECRET:local-dev-only-jwt-signing-key-do-not-use-anywhere-else}
+    auth:
+      cookie-secure: ${AUTH_COOKIE_SECURE:false}
+    # Local sign-in for a fresh database. Local profile only; change the password after first login if you share the DB.
+    bootstrap-admin:
+      email: ${BOOTSTRAP_ADMIN_EMAIL:admin@pawanputra.local}
+      password: ${BOOTSTRAP_ADMIN_PASSWORD:LocalDevAdmin#2026}
   storage:
     endpoint: ${STORAGE_ENDPOINT:http://localhost:9000}
     bucket: ${STORAGE_BUCKET:bos-local}

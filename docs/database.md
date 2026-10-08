@@ -12,7 +12,9 @@ Location: `backend/src/main/resources/db/migration`
 | 1 | `V1__organizations_and_branches.sql` | `organizations`, `branches` |
 | 2 | `V2__users_roles_permissions.sql` | `users`, `roles`, `permissions`, `role_permissions`, `user_roles` |
 | 3 | `V3__service_catalog.sql` | `service_verticals`, `service_categories`, `services` |
-| 4 | `V4__seed_service_verticals.sql` | The six service verticals (the only seed data) |
+| 4 | `V4__seed_service_verticals.sql` | The six service verticals |
+| 5 | `V5__authentication.sql` | Login lock columns on `users`; `user_sessions`, `refresh_tokens`, `password_reset_tokens`; permission codes become `MODULE_ACTION` |
+| 6 | `V6__seed_roles_and_permissions.sql` | The 13 system roles, the permission catalogue, and the default grants |
 
 Rules:
 
@@ -40,15 +42,22 @@ service_verticals ──< service_categories ──< services
 | `branches` | identity | yes | `active` | Code unique per organization; at most one `head_office` per organization |
 | `users` | identity | yes | `status` (INVITED, ACTIVE, SUSPENDED, DISABLED) | Email is the login id: lower-case, unique among live users |
 | `roles` | identity | no | `active` | `system_role` marks roles that ship with the product. A role still assigned to a user cannot be deleted |
-| `permissions` | identity | no | `active` | Defined by the application through migrations; code like `catalog.service.write` |
+| `permissions` | identity | no | `active` | Defined by the application through migrations; code is `MODULE_ACTION`, e.g. `CUSTOMER_VIEW` |
 | `role_permissions` | identity | no | none | Join table, composite primary key |
 | `user_roles` | identity | no | none | One row per grant; records who granted it and when |
+| `user_sessions` | identity | no | `revoked_at` + `revoked_reason` | One row per sign-in (device); records IP and user agent |
+| `refresh_tokens` | identity | no | `used_at` | Chain of single-use tokens per session; hash only |
+| `password_reset_tokens` | identity | no | `used_at` | Single-use, short-lived; hash only |
 | `service_verticals` | catalog | no | `active` | Closed set of six, fixed by a CHECK constraint |
 | `service_categories` | catalog | yes | `active` | Code and name unique within a vertical |
 | `services` | catalog | yes | `active` | Code unique across the whole catalog; name unique within a category |
 
-No seed data exists for organizations, users, roles or permissions. The first organization and
-administrator are created when the identity module gets its service layer.
+Seed data: the six verticals, the 13 system roles, the permission catalogue and the default grants
+(see [security.md](security.md#default-role-matrix)). No organizations or users are seeded; the first
+administrator is created at start-up from environment variables
+(see [security.md](security.md#first-administrator)).
+
+Sessions and reset tokens that ended more than 90 days ago are deleted nightly by `AuthHousekeepingJob`.
 
 ## Conventions
 

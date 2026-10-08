@@ -16,6 +16,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @EntityGraph(attributePaths = {"roleAssignments.role.permissions"})
     Optional<User> findWithRolesByEmail(String email);
 
+    @EntityGraph(attributePaths = {"roleAssignments.role.permissions"})
+    Optional<User> findWithRolesById(UUID id);
+
     boolean existsByEmail(String email);
 
     Page<User> findAllByOrganizationId(UUID organizationId, Pageable pageable);

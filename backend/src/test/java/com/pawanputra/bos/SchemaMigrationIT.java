@@ -29,7 +29,7 @@ class SchemaMigrationIT extends AbstractIntegrationTest {
                         + "ORDER BY installed_rank",
                 String.class);
 
-        assertThat(versions).containsExactly("1", "2", "3", "4");
+        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6");
     }
 
     @Test
@@ -43,6 +43,7 @@ class SchemaMigrationIT extends AbstractIntegrationTest {
         assertThat(tables).containsExactlyInAnyOrder(
                 "organizations", "branches",
                 "users", "roles", "permissions", "user_roles", "role_permissions",
+                "user_sessions", "refresh_tokens", "password_reset_tokens",
                 "service_verticals", "service_categories", "services");
     }
 
@@ -86,9 +87,8 @@ class SchemaMigrationIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void noOtherTableIsSeeded() {
-        for (String table : List.of("organizations", "branches", "users", "roles", "permissions",
-                "user_roles", "role_permissions", "service_categories", "services")) {
+    void catalogContentIsNotSeeded() {
+        for (String table : List.of("service_categories", "services")) {
             assertThat(jdbc.queryForObject("SELECT count(*) FROM " + table, Long.class))
                     .as("rows in %s", table).isZero();
         }
