@@ -1,5 +1,6 @@
 package com.pawanputra.bos.identity.internal;
 
+import com.pawanputra.bos.audit.api.Audited;
 import com.pawanputra.bos.platform.persistence.SoftDeletableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +12,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 /** A physical office of an organization. An organization has at most one head office. */
 @Entity
+@Audited(module = "identity", entity = "Branch", label = "name")
 @Table(name = "branches")
 @SQLRestriction(SoftDeletableEntity.NOT_DELETED)
 public class Branch extends SoftDeletableEntity {
@@ -19,7 +21,8 @@ public class Branch extends SoftDeletableEntity {
     @JoinColumn(name = "organization_id", nullable = false, updatable = false)
     private Organization organization;
 
-    @Column(name = "code", nullable = false, length = 50)
+    /** Unique within the organization, never changed after creation. */
+    @Column(name = "code", nullable = false, updatable = false, length = 50)
     private String code;
 
     @Column(name = "name", nullable = false, length = 200)
@@ -31,10 +34,10 @@ public class Branch extends SoftDeletableEntity {
     @Column(name = "address_line2", length = 200)
     private String addressLine2;
 
-    @Column(name = "city", length = 100)
+    @Column(name = "city", nullable = false, length = 100)
     private String city;
 
-    @Column(name = "state", length = 100)
+    @Column(name = "state", nullable = false, length = 100)
     private String state;
 
     @Column(name = "postal_code", length = 20)
@@ -60,10 +63,13 @@ public class Branch extends SoftDeletableEntity {
         // for JPA
     }
 
-    public Branch(Organization organization, String code, String name) {
+    /** City and state are required: they are how the business is organised as it expands. */
+    public Branch(Organization organization, String code, String name, String city, String state) {
         this.organization = organization;
         this.code = code;
         this.name = name;
+        this.city = city;
+        this.state = state;
     }
 
     public Organization getOrganization() {

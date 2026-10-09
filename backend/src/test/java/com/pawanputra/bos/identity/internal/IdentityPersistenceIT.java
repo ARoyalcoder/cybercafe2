@@ -27,7 +27,7 @@ class IdentityPersistenceIT extends AbstractIntegrationTest {
     @Test
     void persistsUserWithOrganizationBranchRoleAndPermission() {
         Organization org = organizations.save(new Organization("PPG", "Pawan Putra Group"));
-        Branch headOffice = new Branch(org, "HO", "Head Office");
+        Branch headOffice = new Branch(org, "HO", "Head Office", "Lucknow", "Uttar Pradesh");
         headOffice.setHeadOffice(true);
         branches.save(headOffice);
 
@@ -98,7 +98,7 @@ class IdentityPersistenceIT extends AbstractIntegrationTest {
     void userCannotBePlacedInABranchOfAnotherOrganization() {
         Organization own = organizations.save(new Organization("PPG", "Pawan Putra Group"));
         Organization other = organizations.save(new Organization("OTH", "Other Company"));
-        Branch foreignBranch = branches.save(new Branch(other, "HO", "Other HQ"));
+        Branch foreignBranch = branches.save(new Branch(other, "HO", "Other HQ", "Lucknow", "Uttar Pradesh"));
 
         User user = new User(own, "asha@example.com", "Asha");
         user.setBranch(foreignBranch);
@@ -111,11 +111,11 @@ class IdentityPersistenceIT extends AbstractIntegrationTest {
     @Test
     void organizationHasAtMostOneHeadOffice() {
         Organization org = organizations.save(new Organization("PPG", "Pawan Putra Group"));
-        Branch first = new Branch(org, "HO", "Head Office");
+        Branch first = new Branch(org, "HO", "Head Office", "Lucknow", "Uttar Pradesh");
         first.setHeadOffice(true);
         branches.saveAndFlush(first);
 
-        Branch second = new Branch(org, "HO2", "Second Head Office");
+        Branch second = new Branch(org, "HO2", "Second Head Office", "Lucknow", "Uttar Pradesh");
         second.setHeadOffice(true);
 
         assertThatThrownBy(() -> branches.saveAndFlush(second))
@@ -127,10 +127,10 @@ class IdentityPersistenceIT extends AbstractIntegrationTest {
     void branchCodeIsUniqueWithinAnOrganizationOnly() {
         Organization first = organizations.save(new Organization("PPG", "Pawan Putra Group"));
         Organization second = organizations.save(new Organization("OTH", "Other Company"));
-        branches.saveAndFlush(new Branch(first, "DEL", "Delhi"));
-        branches.saveAndFlush(new Branch(second, "DEL", "Delhi")); // same code, different organization: fine
+        branches.saveAndFlush(new Branch(first, "DEL", "Delhi", "Lucknow", "Uttar Pradesh"));
+        branches.saveAndFlush(new Branch(second, "DEL", "Delhi", "Lucknow", "Uttar Pradesh")); // same code, different organization: fine
 
-        assertThatThrownBy(() -> branches.saveAndFlush(new Branch(first, "DEL", "Delhi again")))
+        assertThatThrownBy(() -> branches.saveAndFlush(new Branch(first, "DEL", "Delhi again", "Lucknow", "Uttar Pradesh")))
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .hasMessageContaining("uq_branches_organization_code");
     }

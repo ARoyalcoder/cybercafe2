@@ -1,4 +1,4 @@
-import type { z } from 'zod'
+import { z } from 'zod'
 import { env } from '@/lib/env'
 import { ApiError, apiProblemSchema, CLIENT_ERROR_CODES } from '@/lib/api/errors'
 
@@ -14,6 +14,7 @@ type RequestOptions = {
 }
 
 const REQUEST_ID_HEADER = 'X-Request-Id'
+const undefinedSchema = z.undefined()
 
 // The access token lives in memory only: never in localStorage, where any injected script could read it.
 // It is lost on a page reload and recovered from the HttpOnly refresh cookie (see features/auth/session.ts).
@@ -49,6 +50,32 @@ export async function apiRequest<T>(path: string, schema: z.ZodType<T>, options:
   return parse(response, schema, options.method ?? 'GET', path)
 }
 
+/**
+ * Fetches a file from the API (an export) with the same authentication and token renewal as
+ * apiRequest, and hands it to the browser to save. A plain link cannot be used: it would not carry
+ * the access token.
+ */
+export async function apiDownload(path: string, fallbackFileName: string): Promise<void> {
+  let response = await send(path, {})
+  if (response.status === 401 && unauthorizedHandler && (await unauthorizedHandler())) {
+    response = await send(path, {})
+  }
+  if (!response.ok) {
+    // Reuses the normal error handling: this always throws an ApiError.
+    await parse(response, undefinedSchema, 'GET', path)
+    return
+  }
+  const fileName = /filename="?([^";]+)"?/.exec(response.headers.get('Content-Disposition') ?? '')?.[1]
+  const url = URL.createObjectURL(await response.blob())
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName ?? fallbackFileName
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
 async function send(path: string, options: RequestOptions): Promise<Response> {
   const { method = 'GET', body, signal, authenticated = true } = options
   try {
@@ -58,7 +85,7 @@ async function send(path: string, options: RequestOptions): Promise<Response> {
       // Sends the refresh cookie to the /auth endpoints. The API is same-origin (proxied), so 'same-origin' is enough.
       credentials: 'same-origin',
       headers: {
-        Accept: 'application/json, application/problem+json',
+        Accept: 'application/json, application/problem+json, text/csv',
         ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
         ...(authenticated && accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },

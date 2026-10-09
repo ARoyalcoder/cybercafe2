@@ -57,6 +57,7 @@ All under `/api/v1`.
 | Stolen refresh token | Tokens rotate on every use. If a used token is presented again, the whole session is revoked (`TOKEN_REUSE`), so a thief and the victim cannot both keep it |
 | Forged or altered access token | Signature, expiry and issuer are verified on every request |
 | Privilege escalation through naming | Roles and permissions live in separate authority namespaces (see below) |
+| Covering tracks | Sign-ins (including failures), sign-outs, password changes and every change to audited data are written to an append-only audit log that the application cannot edit. See [audit.md](audit.md) |
 | An admin locking out the owners | Only a `SUPER_ADMIN` can activate or deactivate a `SUPER_ADMIN`. Nobody can deactivate themselves |
 | Reaching another organization's users | They are reported as `404`, never `403`, so their existence is not revealed |
 
@@ -118,15 +119,16 @@ public CustomerResponse get(@PathVariable UUID id) { ... }
 
 ### Default role matrix
 
-Seeded by `V6__seed_roles_and_permissions.sql`. **This is a starting proposal; review it before go-live.**
+Seeded by `V6__seed_roles_and_permissions.sql` (`AUDIT_VIEW` by `V8`; `CUSTOMER_EXPORT` by `V9`, also held by
+Super Admin, Admin and Director). **This is a starting proposal; review it before go-live.**
 Customer, project and finance permissions exist ahead of their modules so roles can be set up now.
 
 | Role | Permissions |
 | --- | --- |
 | `SUPER_ADMIN` | All |
-| `ADMIN` | All of user, organization, branch, catalog, customer, project; `ROLE_VIEW`; `FINANCE_VIEW`. Not `ROLE_UPDATE`, not `FINANCE_APPROVE` |
-| `DIRECTOR` | View everything; `PROJECT_UPDATE`; `FINANCE_APPROVE` |
-| `SALES_MANAGER` | Customer view/create/update/delete; `PROJECT_VIEW`; `CATALOG_VIEW` |
+| `ADMIN` | All of user, organization, branch, catalog, customer, project; `ROLE_VIEW`; `FINANCE_VIEW`; `AUDIT_VIEW`. Not `ROLE_UPDATE`, not `FINANCE_APPROVE` |
+| `DIRECTOR` | View everything, including `AUDIT_VIEW`; `PROJECT_UPDATE`; `FINANCE_APPROVE` |
+| `SALES_MANAGER` | Customer view/create/update/delete/export; `PROJECT_VIEW`; `CATALOG_VIEW` |
 | `SALES_EXECUTIVE` | Customer view/create/update; `CATALOG_VIEW` |
 | `PROJECT_MANAGER` | `PROJECT_VIEW`, `PROJECT_UPDATE`; `CUSTOMER_VIEW`; `CATALOG_VIEW` |
 | `DESIGNER` | `PROJECT_VIEW`; `CATALOG_VIEW` |

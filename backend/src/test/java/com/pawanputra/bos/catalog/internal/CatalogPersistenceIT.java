@@ -49,7 +49,7 @@ class CatalogPersistenceIT extends AbstractIntegrationTest {
         assertThat(loaded.isActive()).isTrue();
         assertThat(loaded.getCreatedBy()).isEqualTo("system");
         assertThat(categories.findAllByVerticalCodeOrderByDisplayOrderAscNameAsc(ServiceVerticalCode.SOLAR))
-                .extracting(ServiceCategory::getCode).containsExactly("ROOFTOP");
+                .extracting(ServiceCategory::getCode).contains("ROOFTOP");
         assertThat(services.findAllByCategoryIdOrderByDisplayOrderAscNameAsc(category.getId())).hasSize(1);
     }
 

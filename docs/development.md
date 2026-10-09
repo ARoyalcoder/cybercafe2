@@ -102,18 +102,22 @@ Example: a `lead` module.
 2. **Migration**: add `backend/src/main/resources/db/migration/V<next>__<description>.sql`. Never
    edit a migration that has been merged. Follow the table conventions in [database.md](database.md).
 3. **Entity** in `internal/`, extending `AuditableEntity` or `SoftDeletableEntity`. Reference other
-   modules by id, not by JPA relationship.
+   modules by id, not by JPA relationship. Add `@Audited(module = ..., entity = ..., label = ...)` so
+   its changes are audited automatically, and `@AuditExclude` on any secret field
+   (see [audit.md](audit.md)).
 4. **Service** in `internal/`: `@Transactional`, throws `ApiException` subclasses, publishes domain
-   events through `DomainEventPublisher` for anything other modules care about.
+   events through `DomainEventPublisher` for anything other modules care about. Approvals, payments,
+   exports and imports are recorded here with `@AuditedOperation` or `AuditRecorder`, never in the controller.
 5. **Controller** in `web/`: mapped under `ApiPaths.V1`, DTO records in and out, `@Valid` on request
    bodies, `@Tag`/`@Operation` for the docs. It needs a valid token by default; add the module's
    permissions and `@PreAuthorize` checks as described in [security.md](security.md#roles-and-permissions),
-   and scope every query by `CurrentUser.require().organizationId()`.
+   and scope every query by `CurrentUser.require().organizationId()`. No audit code goes here.
 6. **Tests**: a unit test for the rules, a web-slice test for the contract including a 401 and a 403
    case, an `*IT` for persistence.
 7. **Frontend**: `src/features/lead/` with `api.ts` (Zod schemas + `queryOptions`), `components/`,
    `pages/`; register the route in `src/app/router.tsx` (wrapped in `RequirePermission`) and the menu
-   entry in `src/config/navigation.ts` (with its `permission`).
+   entry in `src/config/navigation.ts` (with its `permission`). Put
+   `<ActivityTimeline entityType="..." entityId={...} />` on the record's page to show its history.
 8. Run `./mvnw verify`: `ArchitectureTest` fails if the module reaches into another module's internals.
 
 ## Troubleshooting

@@ -15,6 +15,9 @@ Location: `backend/src/main/resources/db/migration`
 | 4 | `V4__seed_service_verticals.sql` | The six service verticals |
 | 5 | `V5__authentication.sql` | Login lock columns on `users`; `user_sessions`, `refresh_tokens`, `password_reset_tokens`; permission codes become `MODULE_ACTION` |
 | 6 | `V6__seed_roles_and_permissions.sql` | The 13 system roles, the permission catalogue, and the default grants |
+| 9 | `V9__customers.sql` | `customers`, `customer_contacts`, `customer_addresses`, `customer_tags`, `customer_tag_assignments`, `customer_notes`; the `CUSTOMER_EXPORT` permission |
+| 8 | `V8__audit_and_activity.sql` | `audit_logs` (append-only, enforced by trigger), `entity_activity_logs`, the `AUDIT_VIEW` permission |
+| 7 | `V7__organization_and_catalog_configuration.sql` | Branch city/state required and indexed; verticals editable (`version`, `updated_by`); service configuration columns (`billing_type`, `unit_label`, `base_price`, `requires_site_visit`, `estimated_duration_days`) |
 
 Rules:
 
@@ -48,6 +51,11 @@ service_verticals ──< service_categories ──< services
 | `user_sessions` | identity | no | `revoked_at` + `revoked_reason` | One row per sign-in (device); records IP and user agent |
 | `refresh_tokens` | identity | no | `used_at` | Chain of single-use tokens per session; hash only |
 | `password_reset_tokens` | identity | no | `used_at` | Single-use, short-lived; hash only |
+| `customers` | customer | yes | `status` (PROSPECT, ACTIVE, INACTIVE, BLOCKED) | Organization-scoped. `*_key` columns hold normalised phone and company name for duplicate detection. See [customers.md](customers.md) |
+| `customer_contacts`, `customer_addresses`, `customer_notes` | customer | no (removed for real, and audited) | none | Deleted with their customer; at most one primary contact, one default address per type |
+| `customer_tags`, `customer_tag_assignments` | customer | no | none | Tag names unique per organization, ignoring case |
+| `audit_logs` | audit | no | none | Append-only: the database refuses `UPDATE` and `DELETE`. No foreign keys, by design. See [audit.md](audit.md) |
+| `entity_activity_logs` | audit | no | none | Per-record timeline; links to its `audit_logs` row |
 | `service_verticals` | catalog | no | `active` | Closed set of six, fixed by a CHECK constraint |
 | `service_categories` | catalog | yes | `active` | Code and name unique within a vertical |
 | `services` | catalog | yes | `active` | Code unique across the whole catalog; name unique within a category |
@@ -110,6 +118,9 @@ items). Not used for join tables, or for reference data that is switched off wit
 - `users` references `branches` with a composite key `(branch_id, organization_id)`, so the database
   itself guarantees that a user's branch belongs to the user's organization.
 - Foreign keys do not cross module boundaries (see [architecture.md](architecture.md)).
+- The audit tables are the exception to "every relationship is a foreign key": they refer to actors
+  and records by plain id so an audit row outlives what it describes. They are also read and written
+  with JDBC rather than JPA entities (see [audit.md](audit.md)).
 
 ## Entities
 
@@ -126,7 +137,8 @@ Mapping rules:
 - Entities live in a module's `internal` package and never leave it.
 - Associations are `LAZY`. Load what a use case needs with an `@EntityGraph` or a fetch join.
 - `services` is mapped by the class `ServiceOffering`, because `Service` collides with Spring's `@Service`.
-- `ServiceVertical` is `@Immutable` and its repository has no write methods: it changes only by migration.
+- `ServiceVertical` has no public constructor and its repository has no insert or delete: the six rows
+  can be edited (name, description, order, active) but never added or removed by the application.
 - `User` stores only a password hash. `User.normalizeEmail` lower-cases and trims; the database
   rejects any email that is not lower-case.
 

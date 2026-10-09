@@ -5,12 +5,15 @@ import { navigation } from '@/config/navigation'
 import { useAuth } from '@/features/auth/auth-context'
 import { cn } from '@/lib/utils'
 
-/** Side rail on desktop, top bar on small screens. */
+/** Side rail on desktop, top bar on small screens. Shows only what the user's permissions allow. */
 export function Sidebar() {
   const { user, signOut } = useAuth()
-  const visibleItems = navigation.filter(
-    (item) => !item.permission || user?.permissions.includes(item.permission),
-  )
+  const sections = navigation
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => !item.permission || user?.permissions.includes(item.permission)),
+    }))
+    .filter((section) => section.items.length > 0)
 
   return (
     <aside className="flex shrink-0 items-center gap-4 border-b bg-sidebar px-4 py-3 md:w-60 md:flex-col md:items-stretch md:gap-6 md:border-r md:border-b-0 md:py-6">
@@ -27,22 +30,29 @@ export function Sidebar() {
         </div>
       </div>
 
-      <nav aria-label="Main" className="flex flex-1 gap-1 md:flex-col">
-        {visibleItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/'}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground',
-                isActive && 'bg-accent text-accent-foreground',
-              )
-            }
-          >
-            <item.icon className="size-4" aria-hidden="true" />
-            {item.label}
-          </NavLink>
+      <nav aria-label="Main" className="flex min-w-0 flex-1 gap-1 overflow-x-auto md:flex-col md:gap-4 md:overflow-visible">
+        {sections.map((section) => (
+          <div key={section.title ?? 'main'} className="flex gap-1 md:flex-col">
+            {section.title ? (
+              <p className="hidden px-2.5 pb-1 text-xs font-medium text-muted-foreground md:block">{section.title}</p>
+            ) : null}
+            {section.items.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/'}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground',
+                    isActive && 'bg-accent text-accent-foreground',
+                  )
+                }
+              >
+                <item.icon className="size-4" aria-hidden="true" />
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 

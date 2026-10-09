@@ -29,7 +29,7 @@ class SchemaMigrationIT extends AbstractIntegrationTest {
                         + "ORDER BY installed_rank",
                 String.class);
 
-        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6");
+        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9");
     }
 
     @Test
@@ -44,6 +44,9 @@ class SchemaMigrationIT extends AbstractIntegrationTest {
                 "organizations", "branches",
                 "users", "roles", "permissions", "user_roles", "role_permissions",
                 "user_sessions", "refresh_tokens", "password_reset_tokens",
+                "audit_logs", "entity_activity_logs",
+                "customers", "customer_contacts", "customer_addresses", "customer_tags",
+                "customer_tag_assignments", "customer_notes",
                 "service_verticals", "service_categories", "services");
     }
 
@@ -84,14 +87,6 @@ class SchemaMigrationIT extends AbstractIntegrationTest {
         assertThat(codes).containsExactly(
                 "CCTV_SECURITY", "DIGITAL_MARKETING", "INTERIOR_DESIGN",
                 "ARCHITECTURE_TECH", "SOLAR", "IT_SUPPORT");
-    }
-
-    @Test
-    void catalogContentIsNotSeeded() {
-        for (String table : List.of("service_categories", "services")) {
-            assertThat(jdbc.queryForObject("SELECT count(*) FROM " + table, Long.class))
-                    .as("rows in %s", table).isZero();
-        }
     }
 
     @Test

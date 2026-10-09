@@ -1,5 +1,7 @@
 package com.pawanputra.bos.identity.internal;
 
+import com.pawanputra.bos.audit.api.AuditExclude;
+import com.pawanputra.bos.audit.api.Audited;
 import com.pawanputra.bos.identity.api.UserStatus;
 import com.pawanputra.bos.platform.persistence.SoftDeletableEntity;
 import jakarta.persistence.CascadeType;
@@ -26,6 +28,7 @@ import org.hibernate.annotations.SQLRestriction;
  * (the database rejects a branch from another organization).
  */
 @Entity
+@Audited(module = "identity", entity = "User", label = "email")
 @Table(name = "users")
 @SQLRestriction(SoftDeletableEntity.NOT_DELETED)
 public class User extends SoftDeletableEntity {
@@ -49,6 +52,7 @@ public class User extends SoftDeletableEntity {
     private String phone;
 
     /** Only ever a password hash. {@code null} while the user is {@link UserStatus#INVITED}. */
+    @AuditExclude
     @Column(name = "password_hash", length = 255)
     private String passwordHash;
 
@@ -56,15 +60,19 @@ public class User extends SoftDeletableEntity {
     @Column(name = "status", nullable = false, length = 20)
     private UserStatus status = UserStatus.INVITED;
 
+    @AuditExclude
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
 
+    @AuditExclude
     @Column(name = "failed_login_attempts", nullable = false)
     private int failedLoginAttempts;
 
+    @AuditExclude
     @Column(name = "locked_until")
     private Instant lockedUntil;
 
+    @AuditExclude
     @Column(name = "password_changed_at")
     private Instant passwordChangedAt;
 

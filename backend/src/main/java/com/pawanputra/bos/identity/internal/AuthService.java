@@ -1,5 +1,8 @@
 package com.pawanputra.bos.identity.internal;
 
+import com.pawanputra.bos.audit.api.AuditAction;
+import com.pawanputra.bos.audit.api.AuditEvent;
+import com.pawanputra.bos.audit.api.AuditRecorder;
 import com.pawanputra.bos.identity.api.PasswordResetNotifier;
 import com.pawanputra.bos.identity.api.SessionRevocationReason;
 import com.pawanputra.bos.identity.api.UserStatus;
@@ -34,6 +37,7 @@ public class AuthService {
 
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
+    private static final String MODULE = "identity";
     private static final String INVALID_CREDENTIALS_MESSAGE = "Invalid email or password";
     private static final String SESSION_ENDED_MESSAGE = "Your session has ended. Please sign in again.";
     private static final String INVALID_RESET_TOKEN_MESSAGE = "This password reset link is invalid or has expired";
@@ -47,6 +51,7 @@ public class AuthService {
     private final AccessTokenIssuer accessTokenIssuer;
     private final PasswordResetNotifier resetNotifier;
     private final AuthProperties properties;
+    private final AuditRecorder audit;
     private final Clock clock;
 
     /** Verified when the email is unknown, so that case takes as long as a wrong password. */
@@ -62,6 +67,7 @@ public class AuthService {
             AccessTokenIssuer accessTokenIssuer,
             PasswordResetNotifier resetNotifier,
             AuthProperties properties,
+            AuditRecorder audit,
             Clock clock) {
         this.users = users;
         this.sessions = sessions;
@@ -72,6 +78,7 @@ public class AuthService {
         this.accessTokenIssuer = accessTokenIssuer;
         this.resetNotifier = resetNotifier;
         this.properties = properties;
+        this.audit = audit;
         this.clock = clock;
         this.timingEqualisationHash = passwordEncoder.encode(SecureTokens.generate());
     }
@@ -90,6 +97,10 @@ public class AuthService {
         Optional<User> found = users.findWithRolesByEmail(User.normalizeEmail(email));
         if (found.isEmpty()) {
             passwordEncoder.matches(password, timingEqualisationHash);
+            // No organization: nobody's audit screen shows it, but it is on record for investigations.
+            audit.record(AuditEvent.of(AuditAction.LOGIN, MODULE, "Sign-in failed")
+                    .actor(null, User.normalizeEmail(email), null)
+                    .metadata("outcome", "FAILURE").metadata("reason", "UNKNOWN_EMAIL"));
             throw invalidCredentials();
         }
         User user = found.get();
@@ -98,6 +109,7 @@ public class AuthService {
             // Same work as a wrong password, so a lock cannot be detected by timing.
             passwordEncoder.matches(password, timingEqualisationHash);
             log.warn("Sign-in refused, account locked: userId={}", user.getId());
+            recordLogin(user, false, "ACCOUNT_LOCKED", null);
             throw invalidCredentials();
         }
         if (user.getPasswordHash() == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
@@ -105,10 +117,12 @@ public class AuthService {
             if (user.isLocked(now)) {
                 log.warn("Account locked after repeated failed sign-ins: userId={}", user.getId());
             }
+            recordLogin(user, false, "WRONG_PASSWORD", null);
             throw invalidCredentials();
         }
         // Only someone who knows the password learns that the account is switched off.
         if (!user.isActive()) {
+            recordLogin(user, false, "ACCOUNT_INACTIVE", null);
             throw new ApiException(ErrorCode.ACCOUNT_INACTIVE,
                     "This account is not active. Contact your administrator.");
         }
@@ -117,6 +131,7 @@ public class AuthService {
         UserSession session = sessions.save(
                 new UserSession(user, client, now, now.plus(properties.sessionMaxLifetime())));
         log.info("Signed in: userId={} sessionId={}", user.getId(), session.getId());
+        recordLogin(user, true, null, session);
         return issueTokens(user, session, now);
     }
 
@@ -133,6 +148,11 @@ public class AuthService {
             // A token that was already exchanged is being presented again: either the legitimate
             // client or a thief holds a stale copy. We cannot tell which, so nobody keeps the session.
             session.revoke(SessionRevocationReason.TOKEN_REUSE, now);
+            User owner = session.getUser();
+            audit.record(AuditEvent.of(AuditAction.LOGOUT, MODULE, "Session revoked: refresh token reused")
+                    .actor(owner.getId(), owner.getEmail(), owner.getOrganization().getId())
+                    .entity("User", owner.getId(), owner.getEmail())
+                    .metadata("reason", "TOKEN_REUSE").metadata("sessionId", session.getId()));
             log.warn("Refresh token reuse detected, session revoked: userId={} sessionId={}",
                     session.getUser().getId(), session.getId());
             throw sessionEnded();
@@ -159,7 +179,15 @@ public class AuthService {
         }
         refreshTokens.findByTokenHash(SecureTokens.hash(rawRefreshToken)).ifPresent(token -> {
             UserSession session = token.getSession();
+            if (session.getRevokedAt() != null) {
+                return; // already ended; signing out twice is not a second event
+            }
             session.revoke(SessionRevocationReason.LOGOUT, clock.instant());
+            User owner = session.getUser();
+            audit.record(AuditEvent.of(AuditAction.LOGOUT, MODULE, "Signed out")
+                    .actor(owner.getId(), owner.getEmail(), owner.getOrganization().getId())
+                    .entity("User", owner.getId(), owner.getEmail())
+                    .metadata("sessionId", session.getId()));
             log.info("Signed out: userId={} sessionId={}", session.getUser().getId(), session.getId());
         });
     }
@@ -185,6 +213,9 @@ public class AuthService {
         }
         user.changePassword(passwordEncoder.encode(newPassword), clock.instant());
         sessionService.revokeAll(user.getId(), SessionRevocationReason.PASSWORD_CHANGED, current.sessionId());
+        // The hash itself is excluded from auditing, so the fact that it changed is recorded explicitly.
+        audit.record(AuditEvent.of(AuditAction.UPDATE, MODULE, "Changed own password")
+                .entity("User", user.getId(), user.getEmail()));
         log.info("Password changed: userId={}", user.getId());
     }
 
@@ -228,6 +259,9 @@ public class AuthService {
         token.markUsed(now);
         user.changePassword(passwordEncoder.encode(newPassword), now);
         sessionService.revokeAll(user.getId(), SessionRevocationReason.PASSWORD_RESET, null);
+        audit.record(AuditEvent.of(AuditAction.UPDATE, MODULE, "Reset password using a reset link")
+                .actor(user.getId(), user.getEmail(), user.getOrganization().getId())
+                .entity("User", user.getId(), user.getEmail()));
         log.info("Password reset completed: userId={}", user.getId());
     }
 
@@ -245,6 +279,16 @@ public class AuthService {
                 user.activeRoleCodes(),
                 user.activePermissionCodes()));
         return new IssuedTokens(accessToken, rawToken, expiresAt, user);
+    }
+
+    /** Sign-ins happen before there is a signed-in user, so the actor is named explicitly. */
+    private void recordLogin(User user, boolean success, String failureReason, UserSession session) {
+        audit.record(AuditEvent.of(AuditAction.LOGIN, MODULE, success ? "Signed in" : "Sign-in failed")
+                .actor(user.getId(), user.getEmail(), user.getOrganization().getId())
+                .entity("User", user.getId(), user.getEmail())
+                .metadata("outcome", success ? "SUCCESS" : "FAILURE")
+                .metadata("reason", failureReason)
+                .metadata("sessionId", session == null ? null : session.getId()));
     }
 
     private static ApiException invalidCredentials() {

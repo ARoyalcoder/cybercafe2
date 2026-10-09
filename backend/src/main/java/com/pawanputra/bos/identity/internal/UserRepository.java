@@ -1,5 +1,8 @@
 package com.pawanputra.bos.identity.internal;
 
+import com.pawanputra.bos.identity.api.UserStatus;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -20,6 +23,14 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findWithRolesById(UUID id);
 
     boolean existsByEmail(String email);
+
+    boolean existsByBranchId(UUID branchId);
+
+    Optional<User> findByIdAndOrganizationId(UUID id, UUID organizationId);
+
+    List<User> findAllByOrganizationIdAndIdIn(UUID organizationId, Collection<UUID> ids);
+
+    List<User> findAllByOrganizationIdAndStatusOrderByFullNameAsc(UUID organizationId, UserStatus status);
 
     Page<User> findAllByOrganizationId(UUID organizationId, Pageable pageable);
 }

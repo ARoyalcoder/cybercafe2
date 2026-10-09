@@ -39,6 +39,7 @@ public final class Permissions {
     public static final String CUSTOMER_CREATE = "CUSTOMER_CREATE";
     public static final String CUSTOMER_UPDATE = "CUSTOMER_UPDATE";
     public static final String CUSTOMER_DELETE = "CUSTOMER_DELETE";
+    public static final String CUSTOMER_EXPORT = "CUSTOMER_EXPORT";
 
     public static final String PROJECT_VIEW = "PROJECT_VIEW";
     public static final String PROJECT_UPDATE = "PROJECT_UPDATE";
@@ -46,15 +47,18 @@ public final class Permissions {
     public static final String FINANCE_VIEW = "FINANCE_VIEW";
     public static final String FINANCE_APPROVE = "FINANCE_APPROVE";
 
+    public static final String AUDIT_VIEW = "AUDIT_VIEW";
+
     public static final Set<String> ALL = Set.of(
             USER_VIEW, USER_CREATE, USER_UPDATE, USER_DELETE,
             ROLE_VIEW, ROLE_UPDATE,
             ORGANIZATION_VIEW, ORGANIZATION_UPDATE,
             BRANCH_VIEW, BRANCH_CREATE, BRANCH_UPDATE, BRANCH_DELETE,
             CATALOG_VIEW, CATALOG_CREATE, CATALOG_UPDATE, CATALOG_DELETE,
-            CUSTOMER_VIEW, CUSTOMER_CREATE, CUSTOMER_UPDATE, CUSTOMER_DELETE,
+            CUSTOMER_VIEW, CUSTOMER_CREATE, CUSTOMER_UPDATE, CUSTOMER_DELETE, CUSTOMER_EXPORT,
             PROJECT_VIEW, PROJECT_UPDATE,
-            FINANCE_VIEW, FINANCE_APPROVE);
+            FINANCE_VIEW, FINANCE_APPROVE,
+            AUDIT_VIEW);
 
     private Permissions() {
     }

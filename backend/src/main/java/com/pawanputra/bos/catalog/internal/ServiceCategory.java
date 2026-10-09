@@ -1,5 +1,6 @@
 package com.pawanputra.bos.catalog.internal;
 
+import com.pawanputra.bos.audit.api.Audited;
 import com.pawanputra.bos.platform.persistence.SoftDeletableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +12,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 /** A grouping of services inside one vertical, e.g. "Installation" under CCTV &amp; Security. */
 @Entity
+@Audited(module = "catalog", entity = "Category", label = "name")
 @Table(name = "service_categories")
 @SQLRestriction(SoftDeletableEntity.NOT_DELETED)
 public class ServiceCategory extends SoftDeletableEntity {

@@ -39,9 +39,18 @@ export async function mockSignedOut(page: Page) {
   )
 }
 
-/** The browser holds a valid refresh cookie: the app starts already signed in. */
-export async function mockSignedIn(page: Page) {
-  await page.route('**/api/v1/auth/refresh', (route) => route.fulfill({ json: TOKEN_RESPONSE }))
+/**
+ * The browser holds a valid refresh cookie: the app starts already signed in.
+ * Pass `permissions` to sign in as a user who holds exactly those.
+ */
+export async function mockSignedIn(page: Page, permissions: string[] = USER.permissions) {
+  await page.route('**/api/v1/auth/refresh', (route) =>
+    route.fulfill({ json: { ...TOKEN_RESPONSE, user: { ...USER, permissions } } }),
+  )
+}
+
+export function pageOf<T>(items: T[], page = 0, totalItems = items.length, size = 20) {
+  return { items, page, size, totalItems, totalPages: Math.max(1, Math.ceil(totalItems / size)) }
 }
 
 export async function mockSystemInfo(page: Page) {

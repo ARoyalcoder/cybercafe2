@@ -23,6 +23,8 @@ One backend deployable, one database, one frontend. No microservices.
 | **Deny by default** | Every endpoint needs a valid access token unless it is on the short allow-list in `SecurityConfig`. A new endpoint is private until someone deliberately makes it public. |
 | **Backend-enforced, permission-based access** | Short-lived JWT access tokens plus rotating, revocable refresh tokens. Code checks `MODULE_ACTION` permissions; roles are data that bundle them. The UI hides what a user cannot do but enforces nothing. See [security.md](security.md). |
 | **One error format** | All failures, including ones raised by Spring Security and the framework, return the same `application/problem+json` body with a stable `code`. See [api-conventions.md](api-conventions.md). |
+| **Audit by declaration** | An entity marked `@Audited` has every create, update, delete and status change recorded with before/after values, in the same transaction, by a Hibernate listener. No module writes audit code in its controllers or services. See [audit.md](audit.md). |
+| **Configuration-driven catalog** | What differs between services (billing, price, unit, site visit, duration) is data that administrators edit. No controller or service branches on a vertical or service code. See [configuration.md](configuration.md). |
 | **Java 21 language level** | The build targets release 21 whatever JDK runs it; the container image uses a Java 21 runtime. |
 
 ## Backend package structure
@@ -38,11 +40,13 @@ platform/            Shared kernel. Knows nothing about any business module.
   persistence/         Entity base classes (BaseEntity, AuditableEntity, SoftDeletableEntity), JPA auditing
   security/            Security filter chain, JWT signing/verification, CurrentUser, CORS
   storage/             ObjectStorage port + S3 implementation
-  web/                 Error response, exception handler, PageResponse, ApiPaths
+  web/                 Error response, exception handler, PageResponse, Paging, ApiPaths
 
 system/              Public build/version info
 identity/            Organizations, branches, users, roles, permissions; sign-in, sessions, passwords
-catalog/             Service verticals, categories and services (what the company sells)
+catalog/             Service verticals, categories and services (what the company sells); see configuration.md
+audit/               Audit log and record activity, written automatically for @Audited entities; see audit.md
+customer/            Customers with contacts, addresses, tags and notes; duplicate detection; see customers.md
 <module>/            Every business module follows the same shape:
   api/                 What OTHER modules may use: enums, ids, service interfaces, event records
   internal/            Entities, repositories, services. Invisible to other modules

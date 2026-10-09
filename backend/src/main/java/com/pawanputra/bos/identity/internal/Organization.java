@@ -1,5 +1,6 @@
 package com.pawanputra.bos.identity.internal;
 
+import com.pawanputra.bos.audit.api.Audited;
 import com.pawanputra.bos.identity.api.OrganizationStatus;
 import com.pawanputra.bos.platform.persistence.SoftDeletableEntity;
 import jakarta.persistence.Column;
@@ -11,6 +12,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 /** A legal or operating entity of the company. Owns branches and users. */
 @Entity
+@Audited(module = "identity", entity = "Organization", label = "name")
 @Table(name = "organizations")
 @SQLRestriction(SoftDeletableEntity.NOT_DELETED)
 public class Organization extends SoftDeletableEntity {

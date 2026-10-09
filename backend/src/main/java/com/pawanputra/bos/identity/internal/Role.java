@@ -1,5 +1,6 @@
 package com.pawanputra.bos.identity.internal;
 
+import com.pawanputra.bos.audit.api.Audited;
 import com.pawanputra.bos.platform.persistence.AuditableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,6 +14,7 @@ import java.util.Set;
 
 /** A named set of permissions that is assigned to users. Deactivated with {@code active}, not deleted. */
 @Entity
+@Audited(module = "identity", entity = "Role", label = "name")
 @Table(name = "roles")
 public class Role extends AuditableEntity {
 

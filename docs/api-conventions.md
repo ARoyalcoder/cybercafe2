@@ -46,6 +46,11 @@ Paginated collections return `PageResponse`:
 ```
 
 - Query parameters: `page` (zero-based), `size` (default 20, maximum 100), `sort=field,asc|desc`.
+  Build the `Pageable` with `Paging.of(...)`, passing the fields the endpoint allows sorting by;
+  anything else is `400 MALFORMED_REQUEST`.
+- Free-text search is the `search` parameter (case-insensitive "contains"); say which fields it covers
+  in the operation summary.
+- Optional booleans in request bodies are `Boolean`, not `boolean`: a missing primitive is rejected.
 - Filters are plain query parameters named after the field: `?status=OPEN&vertical=SOLAR`.
 - Small, fixed reference lists (such as `/service-verticals`) may return a bare array; say so in the
   operation summary.
@@ -94,6 +99,7 @@ Every error, from any layer, has this body with `Content-Type: application/probl
 | `METHOD_NOT_ALLOWED` | 405 | |
 | `NOT_ACCEPTABLE` | 406 | |
 | `CONFLICT` | 409 | Duplicate, or the resource changed since it was read |
+| `POSSIBLE_DUPLICATE` | 409 | The record looks like an existing one. Show the user the matches; resend with `confirmDuplicates: true` to save anyway |
 | `PAYLOAD_TOO_LARGE` | 413 | |
 | `UNSUPPORTED_MEDIA_TYPE` | 415 | |
 | `BUSINESS_RULE_VIOLATION` | 422 | Well-formed request that a domain rule forbids |
